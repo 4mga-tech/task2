@@ -1,6 +1,6 @@
 
 
-/* html,
+html,
 body {
   background-image: linear-gradient(to right, #5bc5e3, #8d3ae8);
   height: 100%;
@@ -8,7 +8,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-} */
+}
 
 .container {
   align-items: center;
