@@ -1,10 +1,10 @@
 import "./Login.css";
 import React, { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEnvelope, faXmark } from "@fortawesome/free-solid-svg-icons";
+import {  faXmark } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
 
-function Login() {
+function Login({login}) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -18,6 +18,8 @@ function Login() {
     if (email === defaultEmail && password === defaultPassword) {
       localStorage.setItem("token", "123456");
       localStorage.setItem("userEmail", email);
+
+      login();
       navigate("/");
     } else {
       setError("Email or password is wrong");
@@ -54,11 +56,17 @@ function Login() {
             required
           />
         </div>
-        {error && <div style={{ color: "red", marginTop: "10px" }}>{error}</div>}
+        {error && (
+          <div style={{ color: "red", marginTop: "10px" }}>{error}</div>
+        )}
         <div className="forgot">Forgot Password?</div>
-        <button className="loginbtn" type="submit">Login</button>
+        <button className="loginbtn" type="submit">
+          Login
+        </button>
       </form>
-      <div className="signup">Not a Member? <span>Signup now</span></div>
+      <div className="signup">
+        Not a Member? <span>Signup now</span>
+      </div>
     </div>
   );
 }
