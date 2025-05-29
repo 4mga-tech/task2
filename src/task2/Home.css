@@ -48,6 +48,7 @@ select {
   font-size: 16px;
   width: 170px;
   font-size: 13px;
+  margin-bottom: 0px;
 }
 .menu-list {
   /* padding-left: 0px; */
@@ -164,5 +165,5 @@ h2{
   font-size: 16px;
   position: absolute;
   top: 0;
-  right:40px ;
+  right:50px ;
 }

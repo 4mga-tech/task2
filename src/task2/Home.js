@@ -1,5 +1,5 @@
 import "./Home.css";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faSchool,
@@ -9,13 +9,19 @@ import {
   faQuestion,
 } from "@fortawesome/free-solid-svg-icons";
 import { Link, Navigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 function Home() {
+  const navigate = useNavigate();
   const handleLogout = () => {
     localStorage.removeItem('token');
-    Navigate('/login');
+    navigate('/login');
   };
-
+useEffect(() => {
+const token = localStorage.getItem('token');
+if(!token){
+  navigate('/login');
+}}, [navigate])
   const [toggleStates, setToggleStates] = useState(Array(12).fill(false));
   const songolt = ["office", "home", "skool"];
   const cards = [
