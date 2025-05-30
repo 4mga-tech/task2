@@ -19,7 +19,7 @@ function Home() {
     navigate('/login');
   };
 useEffect(() => {
-const token = Cookies.getItem('token');
+const token = Cookies.get('token');
 if(!token){
   navigate('/login');
 }}, [navigate])

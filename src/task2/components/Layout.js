@@ -14,7 +14,7 @@ const Layout = () => {
   const songolt = ["office", "home", "skool"];
 
   useEffect(() => {
-    const email = Cookies.getItem("userEmail");
+    const email = Cookies.get("userEmail");
     if (email) {
       setUserEmail(email);
     }
