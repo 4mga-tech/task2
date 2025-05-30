@@ -10,15 +10,16 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { Link, Navigate } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
+import Cookies from "js-cookie";
 
 function Home() {
   const navigate = useNavigate();
   const handleLogout = () => {
-    localStorage.removeItem('token');
+    Cookies.removeItem('token');
     navigate('/login');
   };
 useEffect(() => {
-const token = localStorage.getItem('token');
+const token = Cookies.getItem('token');
 if(!token){
   navigate('/login');
 }}, [navigate])
@@ -42,6 +43,12 @@ if(!token){
     { label: "Us butsalgagch", showToggle: true },
     { label: "Kitchen 1", showToggle: true },
     { label: "Kitchen 2", showToggle: true },
+    { label: "Living Room", showToggle: true },
+    { label: "Living Room", showToggle: true },
+    { label: "Living Room", showToggle: true },
+    { label: "Living Room", showToggle: true },
+    { label: "Living Room", showToggle: true },
+    { label: "Living Room", showToggle: true },
     { label: "Living Room", showToggle: true },
   ];
   const toggleCard = (index) => {

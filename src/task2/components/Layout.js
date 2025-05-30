@@ -5,6 +5,7 @@ import {
   faSchool, faHouse, faRobot, faUser, faQuestion
 } from "@fortawesome/free-solid-svg-icons";
 import "./Layout.css";
+import Cookies from 'js-cookie';
 
 const Layout = () => {
   const navigate = useNavigate();
@@ -13,15 +14,15 @@ const Layout = () => {
   const songolt = ["office", "home", "skool"];
 
   useEffect(() => {
-    const email = localStorage.getItem("userEmail");
+    const email = Cookies.getItem("userEmail");
     if (email) {
       setUserEmail(email);
     }
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("userEmail");
+    Cookies.removeItem("token");
+    Cookies.removeItem("userEmail");
     navigate("/login");
   };
 
