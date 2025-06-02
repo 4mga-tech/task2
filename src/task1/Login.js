@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {  faXmark } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
+import Cookies from "js-cookie";
 
 function Login({login}) {
   const [email, setEmail] = useState("");
@@ -16,8 +17,8 @@ function Login({login}) {
   const handleLogin = (e) => {
     e.preventDefault();
     if (email === defaultEmail && password === defaultPassword) {
-      localStorage.setItem("token", "123456");
-      localStorage.setItem("userEmail", email);
+      Cookies.setItem("token", "123456");
+      Cookies.setItem("userEmail", email);
 
       login();
       navigate("/");

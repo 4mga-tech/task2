@@ -6,15 +6,15 @@ import {
 } from "react-router-dom";
 
 import AppRoutes from "./task2/components/AppRoutes";
-import { UserContextProvider } from "./task2/UserContext";
+import { UserContext, UserContextProvider } from "./task2/UserContext";
 
 function App() {
   return (
-    <UserContextProvider>
+    <UserContext>
       <Router>
         <AppRoutes />
       </Router>
-    </UserContextProvider>
+    </UserContext>
   );
 }
 
