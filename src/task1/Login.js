@@ -1,11 +1,11 @@
 import "./Login.css";
 import React, { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {  faXmark } from "@fortawesome/free-solid-svg-icons";
+import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
 
-function Login({login}) {
+function Login({ login }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -17,8 +17,8 @@ function Login({login}) {
   const handleLogin = (e) => {
     e.preventDefault();
     if (email === defaultEmail && password === defaultPassword) {
-      Cookies.setItem("token", "123456");
-      Cookies.setItem("userEmail", email);
+      Cookies.set("token", "123456", { path: "/" });
+      Cookies.set("userEmail", email,{ path: "/" });
 
       login();
       navigate("/");
@@ -28,6 +28,7 @@ function Login({login}) {
   };
 
   return (
+    <div className="login-layout">
     <div className="container">
       <div className="font">
         <FontAwesomeIcon icon={faXmark} />
@@ -57,9 +58,7 @@ function Login({login}) {
             required
           />
         </div>
-        {error && (
-          <div style={{ color: "red", marginTop: "10px" }}>{error}</div>
-        )}
+        {error && <div style={{ color: "red", marginTop: "10px" }}>{error}</div>}
         <div className="forgot">Forgot Password?</div>
         <button className="loginbtn" type="submit">
           Login
@@ -68,6 +67,7 @@ function Login({login}) {
       <div className="signup">
         Not a Member? <span>Signup now</span>
       </div>
+    </div>
     </div>
   );
 }

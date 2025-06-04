@@ -4,11 +4,11 @@ import Cookies from "js-cookie";
 export const UserContext = createContext();
 
 export const UserContextProvider = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(Cookies.get('token'));
 
   const login = () => {
     const now = new Date().getTime();
-    Cookies.set("loginTime", now);
+    Cookies.set("loginTime", now.toString(), { path: "/" });
     setIsAuthenticated(true);
   };
 
@@ -18,18 +18,22 @@ export const UserContextProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    const loginTime = Cookies.get("loginTime");
-    if (loginTime) {
-      const now = new Date().getTime();
-      const elapsed = now - parseInt(loginTime, 10);
-      const thirtyMinutes = 30 * 60 * 1000;
-      if (elapsed > thirtyMinutes) {
-        logout();
-      } else {
-        setIsAuthenticated(true);
-      }
+  const loginTime = Cookies.get("loginTime");
+  console.log("loginTime cookie on load:", loginTime);
+  if (loginTime) {
+    const now = new Date().getTime();
+    const elapsed = now - parseInt(loginTime, 10);
+    const thirtyMinutes = 30 * 60 * 1000;
+    if (elapsed > thirtyMinutes) {
+      console.log("Session expired");
+      logout();
+    } else {
+      console.log("Session valid, user authenticated");
+      setIsAuthenticated(true);
     }
-  }, []);
+  }
+}, []);
+
 
   useEffect(() => {
     let timer;

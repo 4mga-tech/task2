@@ -1,5 +1,6 @@
 import "./Home.css";
 import React, { useEffect, useState } from "react";
+import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faSchool,
@@ -8,29 +9,47 @@ import {
   faUser,
   faQuestion,
 } from "@fortawesome/free-solid-svg-icons";
-import { Link, Navigate } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
 
 function Home() {
   const navigate = useNavigate();
+
   const handleLogout = () => {
-    Cookies.removeItem('token');
-    navigate('/login');
+    Cookies.remove("token");
+    navigate("/login");
   };
-useEffect(() => {
-const token = Cookies.get('token');
-if(!token){
-  navigate('/login');
-}}, [navigate])
-  const [toggleStates, setToggleStates] = useState(Array(12).fill(false));
+
+  useEffect(() => {
+    const token = Cookies.get("token");
+    if (!token) {
+      navigate("/login");
+    }
+
+    // Fetch usernames from API
+    axios
+      .get("https://jsonplaceholder.typicode.com/users")
+      .then((response) => {
+        const names = response.data.map((user) => user.username);
+        setUsernames(names);
+      })
+      .catch((error) => {
+        console.error("Error fetching users:", error);
+      });
+  }, [navigate]);
+
+  const [usernames, setUsernames] = useState([]);
+  const [toggleStates, setToggleStates] = useState(Array(18).fill(false));
+
   const songolt = ["office", "home", "skool"];
-  const cards = [
-    { label: "4mga-tech", style: "salsan", showToggle: false },
-    { label: "Coridor gerel", showToggle: true },
-    { label: "Huvtsasny uruu", showToggle: true },
-    { label: "Shatny gerel", showToggle: true },
-    { label: "Logo", showToggle: true },
+
+  // Base cards without labels, labels replaced by usernames later
+  const baseCards = [
+    { showToggle: false },
+    { showToggle: true },
+    { showToggle: true },
+    { showToggle: true },
+    { showToggle: true },
     {
       labelTop: "24.6°",
       labelBottom: "Temp",
@@ -38,19 +57,29 @@ if(!token){
       showToggle: false,
       isTempCard: true,
     },
-    { label: "Office Light", showToggle: true },
-    { label: "RGB", style: "green", showToggle: true },
-    { label: "Us butsalgagch", showToggle: true },
-    { label: "Kitchen 1", showToggle: true },
-    { label: "Kitchen 2", showToggle: true },
-    { label: "Living Room", showToggle: true },
-    { label: "Living Room", showToggle: true },
-    { label: "Living Room", showToggle: true },
-    { label: "Living Room", showToggle: true },
-    { label: "Living Room", showToggle: true },
-    { label: "Living Room", showToggle: true },
-    { label: "Living Room", showToggle: true },
+    { showToggle: true },
+    { style: "green", showToggle: true },
+    { showToggle: true },
+    { showToggle: true },
+    { showToggle: true },
+    { showToggle: true },
+    { showToggle: true },
+    { showToggle: true },
+    { showToggle: true },
+    { showToggle: true },
+    { showToggle: true },
+    { showToggle: true },
   ];
+
+  // Combine usernames with baseCards for labels
+  const cards = baseCards.map((card, idx) => {
+    if (usernames.length > idx && !card.isTempCard) {
+      return { ...card, label: usernames[idx] };
+    }
+    // fallback label if no username or if temp card
+    return { ...card, label: card.label || `Card ${idx + 1}` };
+  });
+
   const toggleCard = (index) => {
     const newStates = [...toggleStates];
     newStates[index] = !newStates[index];
@@ -63,34 +92,31 @@ if(!token){
         <FontAwesomeIcon icon={faSchool} style={{ marginRight: "10px" }} />{" "}
         <Link to="/">Must</Link>
         <h2>Hi, Amgalanbaatar</h2>
-        <button className="logout" onClick={handleLogout}>Logout</button>
+        <button className="logout" onClick={handleLogout}>
+          Logout
+        </button>
       </div>
       <div className="menu">
         <select>
-          {songolt.map((songolt) => {
-            return <option>{songolt}</option>;
-          })}
+          {songolt.map((song, index) => (
+            <option key={index}>{song}</option>
+          ))}
         </select>
         <br />
         <br />
         <div className="menu-list">
           <ul>
             <li>
-              {" "}
               <FontAwesomeIcon icon={faHouse} /> <Link to="/">Nuur</Link>{" "}
             </li>
             <li>
-              {" "}
               <FontAwesomeIcon icon={faRobot} />
               <Link to="/auto">Auto</Link>{" "}
             </li>
             <li>
-              {" "}
-              <FontAwesomeIcon icon={faUser} />{" "}
-              <Link to="profile">Profile</Link>
+              <FontAwesomeIcon icon={faUser} /> <Link to="profile">Profile</Link>
             </li>
             <li>
-              {" "}
               <FontAwesomeIcon icon={faQuestion} /> <Link to="/todo">Todo</Link>{" "}
             </li>
           </ul>
@@ -115,9 +141,7 @@ if(!token){
               )}
               {card.showToggle && (
                 <button
-                  className={`toggle-btn ${
-                    toggleStates[index] ? "toggled" : ""
-                  }`}
+                  className={`toggle-btn ${toggleStates[index] ? "toggled" : ""}`}
                   onClick={() => toggleCard(index)}
                 >
                   <div className="thumb"></div>
@@ -130,4 +154,5 @@ if(!token){
     </div>
   );
 }
+
 export default Home;

@@ -1,10 +1,23 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axiosInstance from "./axiosInstance"; 
 import "./Todo.css";
 
 function Todo() {
   const [tasks, setTasks] = useState([]);
   const [input, setInput] = useState("");
   const [editingIndex, setEditingIndex] = useState(null);
+
+  useEffect(() => {
+    axiosInstance
+      .get("/todos?_limit=10")
+      .then((response) => {
+        const todos = response.data.map((todo) => todo.title);
+        setTasks(todos);
+      })
+      .catch((error) => {
+        console.error("Error fetching todos:", error);
+      });
+  }, []);
 
   const handleAdd = () => {
     if (input.trim() === "") return;
@@ -40,9 +53,7 @@ function Todo() {
           placeholder="Enter task"
           onChange={(e) => setInput(e.target.value)}
         />
-        <button onClick={handleAdd}>
-          {editingIndex !== null ? "Fix" : "Add"}
-        </button>
+        <button onClick={handleAdd}>{editingIndex !== null ? "Fix" : "Add"}</button>
       </div>
       <ul className="todo-list">
         {tasks.map((task, index) => (

@@ -21,8 +21,8 @@ const Layout = () => {
   }, []);
 
   const handleLogout = () => {
-    Cookies.removeItem("token");
-    Cookies.removeItem("userEmail");
+    Cookies.remove("token");
+    Cookies.remove("userEmail");
     navigate("/login");
   };
 

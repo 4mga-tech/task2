@@ -8,9 +8,10 @@ import Todo from "../Todo";
 import Layout from "./Layout";
 import ProtectedRoute from "./ProtectedRoute";
 import { UserContext } from "../UserContext";
-
 function AppRoutes() {
   const { isAuthenticated, login } = useContext(UserContext);
+  
+  console.log("Is Authenticated in AppRoutes:", isAuthenticated);
 
   return (
     <Routes>
