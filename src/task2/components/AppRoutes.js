@@ -10,16 +10,14 @@ import ProtectedRoute from "./ProtectedRoute";
 import { UserContext } from "../UserContext";
 function AppRoutes() {
   const { isAuthenticated, login } = useContext(UserContext);
-  
+
   console.log("Is Authenticated in AppRoutes:", isAuthenticated);
 
   return (
     <Routes>
       <Route
         path="/"
-        element={
-          isAuthenticated ? <Home /> : <Navigate to="/login" replace />
-        }
+        element={isAuthenticated ? <Home /> : <Navigate to="/login" replace />}
       />
       <Route path="/login" element={<Login login={login} />} />
 

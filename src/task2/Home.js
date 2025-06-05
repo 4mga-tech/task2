@@ -26,7 +26,6 @@ function Home() {
       navigate("/login");
     }
 
-    // Fetch usernames from API
     axios
       .get("https://jsonplaceholder.typicode.com/users")
       .then((response) => {
@@ -43,7 +42,6 @@ function Home() {
 
   const songolt = ["office", "home", "skool"];
 
-  // Base cards without labels, labels replaced by usernames later
   const baseCards = [
     { showToggle: false },
     { showToggle: true },
@@ -71,12 +69,10 @@ function Home() {
     { showToggle: true },
   ];
 
-  // Combine usernames with baseCards for labels
   const cards = baseCards.map((card, idx) => {
     if (usernames.length > idx && !card.isTempCard) {
       return { ...card, label: usernames[idx] };
     }
-    // fallback label if no username or if temp card
     return { ...card, label: card.label || `Card ${idx + 1}` };
   });
 
