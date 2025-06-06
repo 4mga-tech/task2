@@ -4,13 +4,14 @@ import Cookies from "js-cookie";
 export const UserContext = createContext();
 
 export const UserContextProvider = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(Cookies.get('token'));
+  const [isAuthenticated, setIsAuthenticated] = useState(!!Cookies.get('token'));
 
-  const login = () => {
-    const now = new Date().getTime();
-    Cookies.set("loginTime", now.toString(), { path: "/" });
-    setIsAuthenticated(true);
-  };
+  const login = (token) => {
+  Cookies.set("token", token, { path: "/" });
+  Cookies.set("loginTime", Date.now().toString(), { path: "/" });
+  setIsAuthenticated(true);
+};
+
 
   const logout = () => {
     Cookies.remove("loginTime");

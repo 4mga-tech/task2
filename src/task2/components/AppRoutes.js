@@ -8,6 +8,9 @@ import Todo from "../Todo";
 import Layout from "./Layout";
 import ProtectedRoute from "./ProtectedRoute";
 import { UserContext } from "../UserContext";
+import Reg from "./Reg";
+import Reset from "./Reset";
+import ResetPassword from "./ResetPassword";
 function AppRoutes() {
   const { isAuthenticated, login } = useContext(UserContext);
 
@@ -20,6 +23,9 @@ function AppRoutes() {
         element={isAuthenticated ? <Home /> : <Navigate to="/login" replace />}
       />
       <Route path="/login" element={<Login login={login} />} />
+      <Route path="/reg" element={<Reg />} />
+      <Route path="/reset" element={<Reset />}/>
+      <Route path="/reset-password" element={<ResetPassword/>}/>
 
       <Route element={<Layout />}>
         <Route

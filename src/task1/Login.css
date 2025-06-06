@@ -7,8 +7,22 @@
   align-items: center;
   justify-content: center;
 }
+.reg-container{
+  align-items: center;
+  height: 85vh;
+  width: 450px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background-color: #fff;
+  position: relative;
+}
+.reg-container .input input{
+  height: 30px;
+  width: 100%;
 
-.container {
+}
+.container { 
   align-items: center;
   height: 65vh;
   width: 450px;
