@@ -17,7 +17,63 @@ body {
   overflow: hidden;
   margin: 0;
   padding: 0;
+
 }
+.darkk{
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+body.dark {
+  background-color: #121212;
+  color: #ffffff;
+}
+
+body.dark .layout,
+body.dark .main-content,
+body.dark .card-grid,
+body.dark .card,
+body.dark .header,
+body.dark .menu,
+body.dark .ant-layout,
+body.dark .ant-layout-content,
+body.dark .ant-layout-header,
+body.dark .ant-layout-sider,
+body.dark .ant-layout-footer {
+  background-color: #121212 !important;
+  color: white !important;
+}
+
+/* Force background of Ant Design dropdown, inputs, etc. */
+body.dark .ant-select-selector,
+body.dark .ant-input,
+body.dark .ant-btn,
+body.dark .ant-dropdown-menu,
+body.dark .ant-menu,
+body.dark .ant-modal-content,
+body.dark .ant-select-dropdown {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+  border-color: #333 !important;
+}
+
+/* Menu active items */
+body.dark .ant-menu-item-selected {
+  background-color: #333 !important;
+}
+
+/* Toggle switch customization (optional) */
+body.dark .toggle-btn {
+  background-color: #333;
+  border: 1px solid #555;
+}
+
+/* Schedule tag or button */
+body.dark .schedule-button {
+  background-color: #2e2e2e;
+  color: white;
+}
+
 .header {
   grid-area: header;
   background-color: #f5f6f7;
