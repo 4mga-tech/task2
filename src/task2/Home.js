@@ -24,7 +24,7 @@ function Home() {
   const [devices, setDevices] = useState([]);
   const [loadingStates, setLoadingStates] = useState([]);
   const [statusMap, setStatusMap] = useState({});
-
+  const [baseCards, setBaseCards] = useState([]);
   const scheduleAutomation = (values) => {
     const { deviceId, action, time } = values;
     const targetTime = dayjs(time);
@@ -100,6 +100,24 @@ function Home() {
 
         setDevices(deviceList);
         setLoadingStates(Array(deviceList.length).fill(false));
+
+        // Add temperature & humidity sensor devices to baseCards
+        const tempHumidityDevices = deviceList.filter(
+          (d) => d.category === "temperature & humidity sensor"
+        );
+
+        setBaseCards((prev) => {
+          const existingIds = prev.map((c) => c.id);
+          const newCards = tempHumidityDevices
+            .filter((d) => !existingIds.includes(d.clientId))
+            .map((d) => ({
+              id: d.clientId,
+              style: "blue", // or any style you want
+              showToggle: true,
+              label: `${d.entity} - ${d.category}`,
+            }));
+          return [...prev, ...newCards];
+        });
       })
       .catch((err) => {
         console.error("Error fetching devices", err);
@@ -108,51 +126,51 @@ function Home() {
 
   useEffect(() => {
     const token = Cookies.get("accessToken");
-    if (!token || devices.length === 0) return;
+    if (!token || baseCards.length === 0) return;
 
-    devices.forEach((device) => {
-      if (!deviceStates[device.clientId]) return;
+    baseCards.forEach((card) => {
       axios
-        .get(`http://localhost:3000/api/telemetry/${device.clientId}`, {
+        .get(`http://localhost:3000/api/telemetry/${card.id}`, {
           headers: { Authorization: `Bearer ${token}` },
         })
         .then((res) => {
-          if (res.data.status) {
+          if (Array.isArray(res.data) && res.data.length > 0) {
             setStatusMap((prev) => ({
               ...prev,
-              [device.clientId]: res.data.status,
+              [card.id]: res.data[0], // assuming latest data is at index 0
             }));
           }
         })
         .catch((err) => {
-          console.error(`Error fetching status for ${device.clientId}:`, err);
+          console.error(`Error fetching status for ${card.id}:`, err);
         });
     });
-  }, [devices, deviceStates]);
+  }, [baseCards]);
 
-  const [baseCards, setBaseCards] = useState([
-    {
-      id: "VIOT_E99614",
-      style: "pink",
-      showToggle: true,
-      label: "Орчны температур, чийгшил",
-    },
-    {
-      id: "VIOT_C85058",
-      style: "pink",
-      showToggle: false,
-      label: "Орчны температур, чийгшил",
-    },
-  ]);
+  // Load baseCards
   useEffect(() => {
     const savedCards = localStorage.getItem("baseCards");
     if (savedCards) {
       setBaseCards(JSON.parse(savedCards));
     }
   }, []);
+
+  // Save baseCards
   useEffect(() => {
     localStorage.setItem("baseCards", JSON.stringify(baseCards));
   }, [baseCards]);
+
+  // 👉 Add these below:
+  useEffect(() => {
+    const savedStates = localStorage.getItem("deviceStates");
+    if (savedStates) {
+      setDeviceStates(JSON.parse(savedStates));
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("deviceStates", JSON.stringify(deviceStates));
+  }, [deviceStates]);
 
   const toggleCard = (index, clientId) => {
     const newLoadingStates = [...loadingStates];
@@ -243,6 +261,15 @@ function Home() {
                   )}
                 </button>
               )}
+              <Button
+                className="delete-btn"
+                onClick={() => {
+                  setBaseCards((prev) => prev.filter((c) => c.id !== card.id));
+                }}
+                style={{ marginLeft: "8px" }}
+              >
+                Delete
+              </Button>
 
               {deviceStates[card.id] && (
                 <Button
@@ -255,7 +282,27 @@ function Home() {
                 </Button>
               )}
 
-              {card.id === "VIOT_E99614" && (
+              {card.category === "temperature & humidity sensor" ||
+              card.label
+                .toLowerCase()
+                .includes("temperature & humidity sensor") ? (
+                <div
+                  style={{ marginTop: "8px", fontSize: "14px", color: "#fff" }}
+                >
+                  {deviceStates[card.id] ? (
+                    <>
+                      🌡 Температур:{" "}
+                      {statusMap[card.id]?.data?.temperature ?? "Мэдээлэл алга"}{" "}
+                      °C
+                      <br />
+                      💧 Чийгшил:{" "}
+                      {statusMap[card.id]?.data?.humidity ?? "Мэдээлэл алга"} %
+                    </>
+                  ) : (
+                    <>Холболт салсан</>
+                  )}
+                </div>
+              ) : card.id === "VIOT_E99614" ? (
                 <div
                   style={{ marginTop: "8px", fontSize: "14px", color: "#fff" }}
                 >
@@ -266,7 +313,7 @@ function Home() {
                     : "Холболт салсан"}{" "}
                   °C
                 </div>
-              )}
+              ) : null}
             </div>
           ))}
         </div>
