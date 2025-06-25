@@ -232,8 +232,15 @@ function Home() {
           {baseCards.map((card, index) => (
             <div
               key={index}
-              className={`card ${
-                !deviceStates[card.id] ? "salsan" : card.style || ""
+              className={`card 
+  ${!deviceStates[card.id] ? "salsan" : ""}
+  ${
+    deviceStates[card.id] &&
+    typeof statusMap[card.id]?.data?.temperature === "number"
+      ? statusMap[card.id].data.temperature > 16
+        ? "hot"
+        : "cold"
+      : card.style || ""
               }`}
             >
               {!deviceStates[card.id] && (

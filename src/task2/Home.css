@@ -145,6 +145,14 @@ select {
   cursor: pointer;
   transition: transform 0.3s ease, boxshadow 0.3s ease;
 }
+.card.hot {
+  background-color: #ff686a !important;
+}
+
+.card.cold {
+  background-color: #82d2ec !important;
+}
+
 .card:hover {
   transform: scale(1.02);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
@@ -167,7 +175,7 @@ select {
   gap: 26px;
 }
 .card.salsan {
-  background-color: #888;
+  background-color: #888 !important;
   color: #ccc;
   border: 1px solid #aaa;
 }
