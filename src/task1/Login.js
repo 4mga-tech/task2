@@ -12,32 +12,31 @@ function Login({ login }) {
   const navigate = useNavigate();
 
   const onFinish = async (values) => {
-  const { email, password } = values;
-  try {
-    const result = await axiosInstance.post(
-      "http://localhost:3000/api/user/login",
-      { email, password },
-      { withCredentials: true }
-    );
-    console.log("data", result.data);
-    if (result.data.accessToken) {
-      const user = result.data.user;
-      Cookies.set("accessToken", result.data.accessToken);
-      Cookies.set("userName", user.name);
-      Cookies.set("userEmail", user.email);
-      Cookies.set("userId", user._id);
-      Cookies.set("loginTime", Date.now());
+    const { email, password } = values;
+    try {
+      const result = await axiosInstance.post(
+        "http://localhost:3000/api/user/login",
+        { email, password },
+        { withCredentials: true }
+      );
+      console.log("data", result.data);
+      if (result.data.accessToken) {
+        const user = result.data.user;
+        Cookies.set("accessToken", result.data.accessToken);
+        Cookies.set("userName", user.name);
+        Cookies.set("userEmail", user.email);
+        Cookies.set("userId", user._id);
+        Cookies.set("loginTime", Date.now());
 
-      login();
-      navigate("/");
-    } else {
-      setError(result.data.message || "aldaa zaasan2");
+        login();
+        navigate("/");
+      } else {
+        setError(result.data.message || "aldaa zaasan2");
+      }
+    } catch (err) {
+      setError("buruu bna");
     }
-  } catch (err) {
-    setError("buruu bna");
-  }
-};
-
+  };
 
   return (
     <div className="login-layout">
@@ -72,7 +71,7 @@ function Login({ login }) {
           )}
 
           <div
-            className="forgot"u
+            className="forgot"
             onClick={() => navigate("/reset")}
             style={{ cursor: "pointer" }}
           >

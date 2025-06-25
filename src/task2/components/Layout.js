@@ -12,10 +12,12 @@ import { Select, Menu, Button } from "antd";
 import Cookies from "js-cookie";
 
 const Layout = () => {
-  const [darkMode, setDarkMode] = useState(false);
-
+  const [darkMode, setDarkMode] = useState(() => {
+    return localStorage.getItem("theme") === "dark";
+  });
   useEffect(() => {
     document.body.classList.toggle("dark", darkMode);
+    localStorage.setItem("theme", darkMode ? "dark" : "light");
   }, [darkMode]);
 
   const navigate = useNavigate();
@@ -111,7 +113,11 @@ const Layout = () => {
             { value: "logout", label: "Logout" },
           ]}
         />
-        <Button className="darkk" onClick={() => setDarkMode(!darkMode)} type="default">
+        <Button
+          className="darkk"
+          onClick={() => setDarkMode(!darkMode)}
+          type="default"
+        >
           {darkMode ? "light" : "Dark"}
         </Button>
       </div>
