@@ -21,7 +21,7 @@ function Home() {
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const [deviceStates, setDeviceStates] = useState({});
-  const [devices, setDevices] = useState([]);
+  const [, setDevices] = useState([]);
   const [loadingStates, setLoadingStates] = useState([]);
   const [statusMap, setStatusMap] = useState({});
   const [baseCards, setBaseCards] = useState([]);
@@ -265,6 +265,16 @@ function Home() {
                 className="delete-btn"
                 onClick={() => {
                   setBaseCards((prev) => prev.filter((c) => c.id !== card.id));
+                  setStatusMap((prev) => {
+                    const newMap = { ...prev };
+                    delete newMap[card.id];
+                    return newMap;
+                  });
+                  setDeviceStates((prev) => {
+                    const newStates = { ...prev };
+                    delete newStates[card.id];
+                    return newStates;
+                  });
                 }}
                 style={{ marginLeft: "8px" }}
               >
