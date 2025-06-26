@@ -113,6 +113,7 @@ body.dark .schedule-button {
   height: 100%;
   overflow: hidden;
   margin-left: 30px;
+
 }
 
 select {
@@ -333,4 +334,27 @@ h2 {
   display: flex;
   align-items: center;
   gap: 6px;
+}
+.status-box{
+  border: 1px solid rgb(197, 193, 193);
+  position: absolute;
+  top: 200px;
+  width: 100%;
+  height: 200px;
+  border-radius: 15px;
+
+}
+.status-box ul {
+  max-height: 180px;   
+  overflow-y: auto;
+  margin: 0;
+  padding-left: 20px;
+  list-style-type: none;
+}
+
+.status-box li {
+  padding: 4px 0;
+  border-bottom: 1px solid rgba(197, 193, 193, 0.3);
+  font-size: 14px;
+  font-size: 15px;
 }

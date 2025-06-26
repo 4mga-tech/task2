@@ -2,7 +2,7 @@ import "./Home.css";
 import React, { useEffect, useState } from "react";
 
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, } from "react-router-dom";
 import Cookies from "js-cookie";
 import { Button, Modal, Form, Select, TimePicker, message } from "antd";
 import dayjs from "dayjs";
@@ -17,14 +17,32 @@ function Home() {
   const [deviceSelectVisible, setDeviceSelectVisible] = useState(false);
   const [availableDevices, setAvailableDevices] = useState([]);
   const [selectedDevice, setSelectedDevice] = useState(null);
+  const [statusLog, setStatusLog] = useState(() => {
+    const saved = localStorage.getItem("statusLog");
+    return saved ? JSON.parse(saved) : [];
+  });
+  const addStatusLogEntry = (deviceId, turnedOn) => {
+    const timestamp = dayjs().format("YYYY-MM-DD HH:mm:ss");
+    const message = turnedOn
+      ? `${deviceId} төхөөрөмж холболттой боллоо.`
+      : `${deviceId} төхөөрөмж холболтоос саллаа.`;
 
+    const newEntry = { timestamp, message };
+    setStatusLog((prev) => {
+      const updated = [newEntry, ...prev]; // newest first
+      localStorage.setItem("statusLog", JSON.stringify(updated));
+      return updated;
+    });
+  };
   const [form] = Form.useForm();
+  const currentDate = dayjs().format("YYYY-MM-DD");
   const navigate = useNavigate();
   const [deviceStates, setDeviceStates] = useState({});
   const [, setDevices] = useState([]);
   const [loadingStates, setLoadingStates] = useState([]);
   const [statusMap, setStatusMap] = useState({});
   const [baseCards, setBaseCards] = useState([]);
+  const [currentTime, setCurrentTime] = useState(dayjs().format("HH:mm:ss"));
   const scheduleAutomation = (values) => {
     const { deviceId, action, time } = values;
     const targetTime = dayjs(time);
@@ -134,10 +152,11 @@ function Home() {
           headers: { Authorization: `Bearer ${token}` },
         })
         .then((res) => {
-          if (Array.isArray(res.data) && res.data.length > 0) {
+          console.log(`Telemetry for ${card.id}:`, res.data);
+          if (res.data && res.data.data) {
             setStatusMap((prev) => ({
               ...prev,
-              [card.id]: res.data[0], // assuming latest data is at index 0
+              [card.id]: res.data,
             }));
           }
         })
@@ -147,7 +166,6 @@ function Home() {
     });
   }, [baseCards]);
 
-  // Load baseCards
   useEffect(() => {
     const savedCards = localStorage.getItem("baseCards");
     if (savedCards) {
@@ -155,12 +173,10 @@ function Home() {
     }
   }, []);
 
-  // Save baseCards
   useEffect(() => {
     localStorage.setItem("baseCards", JSON.stringify(baseCards));
   }, [baseCards]);
 
-  // 👉 Add these below:
   useEffect(() => {
     const savedStates = localStorage.getItem("deviceStates");
     if (savedStates) {
@@ -182,10 +198,14 @@ function Home() {
         headers: { Authorization: `Bearer ${Cookies.get("accessToken")}` },
       })
       .then(() => {
-        setDeviceStates((prev) => ({
-          ...prev,
-          [clientId]: !prev[clientId],
-        }));
+        setDeviceStates((prev) => {
+          const newState = !prev[clientId];
+          addStatusLogEntry(clientId, newState);
+          return {
+            ...prev,
+            [clientId]: newState,
+          };
+        });
       })
       .catch((err) => {
         console.error("Toggle error:", err);
@@ -195,6 +215,15 @@ function Home() {
         setLoadingStates([...newLoadingStates]);
       });
   };
+  useEffect(() => {
+    console.log("Status Map:", statusMap);
+  }, [statusMap]);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(dayjs().format("HH:mm:ss"));
+    }, 1000);
+    return () => clearInterval(interval);
+  });
 
   return (
     <div className="main-content">
@@ -241,7 +270,7 @@ function Home() {
         ? "hot"
         : "cold"
       : card.style || ""
-              }`}
+  }`}
             >
               {!deviceStates[card.id] && (
                 <img
@@ -434,7 +463,7 @@ function Home() {
           <img className="cloud" src={cloudImg} alt="cloud" />
         </div>
         <div className="box-container">
-          <div className="box profile-box">
+          <div className="box profile-box" onClick={() => navigate("/profile")}>
             <div className="box-header">
               <UserOutlined style={{ fontSize: 17 }} />
               <span>Профайл</span>
@@ -462,6 +491,64 @@ function Home() {
               <h3 style={{ color: "#39b54a" }}>Premium</h3>
               <p>2023.05.06 хүртэл</p>
             </div>
+          </div>
+          <div className="status-box">
+            <h3
+              style={{
+                paddingLeft: "20px",
+                borderBottom: "1px solid #ccc",
+                paddingBottom: "8px",
+              }}
+            >
+              {currentDate}
+            </h3>
+            <ul
+              style={{
+                maxHeight: "180px",
+                overflowY: "auto",
+                paddingLeft: "20px",
+              }}
+            >
+              {statusLog.length === 0 ? (
+                <li>No status changes yet</li>
+              ) : (
+                statusLog.map((entry, i) => (
+                  <li
+                    key={i}
+                    style={{
+                      position: "relative",
+                      padding: "8px 40px 20px 10px",
+                    }}
+                  >
+                    <div style={{ fontWeight: "bold" }}>{entry.message}</div>
+
+                    <span
+                      style={{
+                        position: "absolute",
+                        top: "8px",
+                        right: "10px",
+                        fontSize: "12px",
+                        color: "#999",
+                      }}
+                    >
+                      {dayjs(entry.timestamp).format("HH:mm")}
+                    </span>
+
+                    <span
+                      style={{
+                        position: "absolute",
+                        bottom: "4px",
+                        left: "10px",
+                        fontSize: "12px",
+                        color: "#999",
+                      }}
+                    >
+                      {dayjs(entry.timestamp).format("YYYY-MM-DD")}
+                    </span>
+                  </li>
+                ))
+              )}
+            </ul>
           </div>
         </div>
       </div>
