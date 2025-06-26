@@ -185,36 +185,36 @@ function Home() {
   }, []);
 
   const toggleCard = (index, clientId) => {
-  const newLoadingStates = [...loadingStates];
-  newLoadingStates[index] = true;
-  setLoadingStates(newLoadingStates);
+    const newLoadingStates = [...loadingStates];
+    newLoadingStates[index] = true;
+    setLoadingStates(newLoadingStates);
 
-  axios
-    .post(`http://localhost:3000/api/status/toggle/${clientId}`, null, {
-      headers: { Authorization: `Bearer ${Cookies.get("accessToken")}` },
-    })
-    .then(() => {
-      setTimeout(() => {
-        setDeviceStates((prev) => {
-          const newState = !prev[clientId];
-          addStatusLogEntry(clientId, newState);
-          return {
-            ...prev,
-            [clientId]: newState,
-          };
-        });
+    axios
+      .post(`http://localhost:3000/api/status/toggle/${clientId}`, null, {
+        headers: { Authorization: `Bearer ${Cookies.get("accessToken")}` },
+      })
+      .then(() => {
+        setTimeout(() => {
+          setDeviceStates((prev) => {
+            const newState = !prev[clientId];
+            addStatusLogEntry(clientId, newState);
+            return {
+              ...prev,
+              [clientId]: newState,
+            };
+          });
 
+          newLoadingStates[index] = false;
+          setLoadingStates([...newLoadingStates]);
+        }, 1500);
+      })
+      .catch((err) => {
+        console.error("Toggle error:", err);
+        message.error("Toggle failed");
         newLoadingStates[index] = false;
         setLoadingStates([...newLoadingStates]);
-      }, 1500);
-    })
-    .catch((err) => {
-      console.error("Toggle error:", err);
-      message.error("Toggle failed");
-      newLoadingStates[index] = false;
-      setLoadingStates([...newLoadingStates]);
-    });
-};
+      });
+  };
 
   useEffect(() => {
     console.log("Status Map:", statusMap);
@@ -226,9 +226,8 @@ function Home() {
     return () => clearInterval(interval);
   });
   useEffect(() => {
-  localStorage.setItem("deviceStates", JSON.stringify(deviceStates));
-}, [deviceStates]);
-
+    localStorage.setItem("deviceStates", JSON.stringify(deviceStates));
+  }, [deviceStates]);
 
   return (
     <div className="main-content">
@@ -277,8 +276,11 @@ function Home() {
                 : card.style || ""
             }`}
             >
-              {!deviceStates[card.id] &&
-                typeof statusMap[card.id]?.data?.temperature === "number" && (
+              {typeof statusMap[card.id]?.data?.temperature === "number" &&
+                (!deviceStates[card.id] ||
+                  (deviceStates[card.id] &&
+                    (statusMap[card.id].data.temperature > 16 ||
+                      statusMap[card.id].data.temperature <= 16))) && (
                   <img
                     src={Linactive}
                     alt="Linactive"
