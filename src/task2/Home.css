@@ -113,8 +113,11 @@ body.dark .schedule-button {
   height: 100%;
   overflow: hidden;
   margin-left: 30px;
-
 }
+body.dark .right-section {
+  background-color: #2e2e2e;
+}
+
 
 select {
   padding: 8px;
@@ -136,7 +139,7 @@ select {
   background: #4969c6;
   color: white;
   border-radius: 10px;
-  height: 170px;
+  height: 140px;
   padding: 10px 16px;
   display: flex;
   flex-direction: column;
@@ -161,9 +164,12 @@ select {
 }
 .auto {
   position: absolute;
-  left: 7%;
-  top: 10%;
+  right: 10px;
+  bottom: 10px;
+  background-color: white;
+  color: #ff686a;
 }
+
 .telemetry-info {
   margin-top: 10px;
   font-size: 14px;
@@ -175,19 +181,21 @@ select {
   grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
   gap: 26px;
 }
-.card.salsan {
-  background-color: #9c9c9c !important;
+.card.inactivee {
+  background-color: #a75cb2;
   color: #ccc;
-  border: 1px solid #aaa;
+  border: 1px solid #d6d6d6;
 }
-.inactive-icon {
+.Linactive-icon {
   position: absolute;
   top: 15px;
   left: 15px;
   width: 30px;
   height: 30px;
   opacity: 1;
-  z-index: 1;
+  z-index: 3;
+  opacity: 1;
+  pointer-events: none;
 }
 
 .card.inactive {
@@ -199,18 +207,23 @@ select {
 .card.purple {
   background: #a75cb2;
 }
-
-.card.green {
-  background: #87b25c;
+.card.temp {
+  background-color: #a75cb2;
 }
+
 .card.orange {
   background: #c69a49;
 }
 .card.pink {
   background: #c1547c;
 }
-.card.anotherGreen {
-  background: #a0a300;
+
+.toggle-btn.loading {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+.toggle-btn.loading:hover {
+  border-color: #ff4d4f;
 }
 .toggle-btn {
   position: absolute;
@@ -234,6 +247,7 @@ select {
   position: absolute;
   top: 0;
   left: 0;
+  
 }
 .toggle-btn.toggled {
   background-color: rgb(49, 183, 49);
@@ -244,6 +258,20 @@ select {
 .toggle-btn:hover {
   border-color: gray;
 }
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #999;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .card-text {
   padding-bottom: 5px;
 }
@@ -335,17 +363,16 @@ h2 {
   align-items: center;
   gap: 6px;
 }
-.status-box{
+.status-box {
   border: 1px solid rgb(197, 193, 193);
   position: absolute;
   top: 200px;
   width: 100%;
   height: 200px;
   border-radius: 15px;
-
 }
 .status-box ul {
-  max-height: 180px;   
+  max-height: 180px;
   overflow-y: auto;
   margin: 0;
   padding-left: 20px;

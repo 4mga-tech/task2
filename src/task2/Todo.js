@@ -4,28 +4,31 @@ import { Button, Modal, ConfigProvider } from "antd";
 import { createStyles, useTheme } from "antd-style";
 import "./Todo.css";
 
-
 const useStyle = createStyles(({ token }) => ({
-  'my-modal-body': {
+  "my-modal-body": {
     background: token.blue1,
     padding: token.paddingSM,
   },
-  'my-modal-mask': {
+  "my-modal-mask": {
     boxShadow: `inset 0 0 15px #fff`,
   },
-  'my-modal-header': {
+  "my-modal-header": {
     borderBottom: `1px dotted ${token.colorPrimary}`,
   },
-  'my-modal-footer': {
+  "my-modal-footer": {
     color: token.colorPrimary,
   },
-  'my-modal-content': {
-    border: '1px solid #333',
+  "my-modal-content": {
+    border: "1px solid #333",
   },
 }));
 
 function Todo() {
-  const [tasks, setTasks] = useState([]);
+  const [tasks, setTasks] = useState(() => {
+    const saved = localStorage.getItem("tasks");
+    if(saved) return JSON.parse(saved);
+    return [];
+  });
   const [input, setInput] = useState("");
   const [editingIndex, setEditingIndex] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -34,11 +37,11 @@ function Todo() {
   const token = useTheme();
 
   const classNames = {
-    body: styles['my-modal-body'],
-    mask: styles['my-modal-mask'],
-    header: styles['my-modal-header'],
-    footer: styles['my-modal-footer'],
-    content: styles['my-modal-content'],
+    body: styles["my-modal-body"],
+    mask: styles["my-modal-mask"],
+    header: styles["my-modal-header"],
+    footer: styles["my-modal-footer"],
+    content: styles["my-modal-content"],
   };
 
   const modalStyles = {
@@ -48,34 +51,38 @@ function Todo() {
       paddingInlineStart: 5,
     },
     body: {
-      boxShadow: 'inset 0 0 5px #999',
+      boxShadow: "inset 0 0 5px #999",
       borderRadius: 5,
     },
     mask: {
-      backdropFilter: 'blur(10px)',
+      backdropFilter: "blur(10px)",
     },
     footer: {
-      borderTop: '1px solid #333',
+      borderTop: "1px solid #333",
     },
     content: {
-      boxShadow: '0 0 30px #999',
+      boxShadow: "0 0 30px #999",
     },
   };
 
   useEffect(() => {
+    if(tasks.length === 0){
     axiosInstance
-      .get("/todos?_limit=10", {
+      .get("/todos?_limit=9", {
         baseURL: "https://jsonplaceholder.typicode.com",
       })
       .then((response) => {
         const todos = response.data.map((todo) => todo.title);
         setTasks(todos);
+        localStorage.setItem("tasks", JSON.stringify(todos));
       })
       .catch((error) => {
         console.error("Error fetching todos:", error);
       });
-  }, []);
-
+  }}, []);
+  useEffect(() => {
+    localStorage.setItem("tasks", JSON.stringify(tasks));
+  }, [tasks]);
   const handleAdd = () => {
     if (input.trim() === "") return;
 
@@ -105,7 +112,6 @@ function Todo() {
 
   return (
     <div className="todo-container">
-      <h2>My Todo List</h2>
       <div className="todo-input">
         <Button type="primary" onClick={() => setIsModalVisible(true)}>
           {editingIndex !== null ? "Fix Task" : "Add Task"}
@@ -118,7 +124,9 @@ function Todo() {
             <span>{task}</span>
             <div>
               <Button onClick={() => handleEdit(index)}>Fix</Button>
-              <Button danger onClick={() => handleDelete(index)}>Delete</Button>
+              <Button danger onClick={() => handleDelete(index)}>
+                Delete
+              </Button>
             </div>
           </li>
         ))}

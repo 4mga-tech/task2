@@ -1,12 +1,12 @@
 import "./Home.css";
 import React, { useEffect, useState } from "react";
-
 import axios from "axios";
-import { useNavigate, } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
 import { Button, Modal, Form, Select, TimePicker, message } from "antd";
 import dayjs from "dayjs";
-import InactiveIcon from "../icons/inactive.svg";
+// import InactiveIcon from "../icons/inactive.svg";
+import Linactive from "../icons/Linactive.svg";
 import cloudImg from "../icons/ab_multi-cloud.jpg";
 import { UserOutlined, WalletOutlined } from "@ant-design/icons";
 
@@ -42,7 +42,7 @@ function Home() {
   const [loadingStates, setLoadingStates] = useState([]);
   const [statusMap, setStatusMap] = useState({});
   const [baseCards, setBaseCards] = useState([]);
-  const [currentTime, setCurrentTime] = useState(dayjs().format("HH:mm:ss"));
+  const [, setCurrentTime] = useState(dayjs().format("HH:mm:ss"));
   const scheduleAutomation = (values) => {
     const { deviceId, action, time } = values;
     const targetTime = dayjs(time);
@@ -184,20 +184,17 @@ function Home() {
     }
   }, []);
 
-  useEffect(() => {
-    localStorage.setItem("deviceStates", JSON.stringify(deviceStates));
-  }, [deviceStates]);
-
   const toggleCard = (index, clientId) => {
-    const newLoadingStates = [...loadingStates];
-    newLoadingStates[index] = true;
-    setLoadingStates(newLoadingStates);
+  const newLoadingStates = [...loadingStates];
+  newLoadingStates[index] = true;
+  setLoadingStates(newLoadingStates);
 
-    axios
-      .post(`http://localhost:3000/api/status/toggle/${clientId}`, null, {
-        headers: { Authorization: `Bearer ${Cookies.get("accessToken")}` },
-      })
-      .then(() => {
+  axios
+    .post(`http://localhost:3000/api/status/toggle/${clientId}`, null, {
+      headers: { Authorization: `Bearer ${Cookies.get("accessToken")}` },
+    })
+    .then(() => {
+      setTimeout(() => {
         setDeviceStates((prev) => {
           const newState = !prev[clientId];
           addStatusLogEntry(clientId, newState);
@@ -206,15 +203,19 @@ function Home() {
             [clientId]: newState,
           };
         });
-      })
-      .catch((err) => {
-        console.error("Toggle error:", err);
-      })
-      .finally(() => {
+
         newLoadingStates[index] = false;
         setLoadingStates([...newLoadingStates]);
-      });
-  };
+      }, 1500);
+    })
+    .catch((err) => {
+      console.error("Toggle error:", err);
+      message.error("Toggle failed");
+      newLoadingStates[index] = false;
+      setLoadingStates([...newLoadingStates]);
+    });
+};
+
   useEffect(() => {
     console.log("Status Map:", statusMap);
   }, [statusMap]);
@@ -224,6 +225,10 @@ function Home() {
     }, 1000);
     return () => clearInterval(interval);
   });
+  useEffect(() => {
+  localStorage.setItem("deviceStates", JSON.stringify(deviceStates));
+}, [deviceStates]);
+
 
   return (
     <div className="main-content">
@@ -262,23 +267,24 @@ function Home() {
             <div
               key={index}
               className={`card 
-  ${!deviceStates[card.id] ? "salsan" : ""}
-  ${
-    deviceStates[card.id] &&
-    typeof statusMap[card.id]?.data?.temperature === "number"
-      ? statusMap[card.id].data.temperature > 16
-        ? "hot"
-        : "cold"
-      : card.style || ""
-  }`}
+               ${!deviceStates[card.id] ? "inactivee" : ""}
+            ${
+              deviceStates[card.id] &&
+              typeof statusMap[card.id]?.data?.temperature === "number"
+                ? statusMap[card.id].data.temperature > 16
+                  ? "hot"
+                  : "cold"
+                : card.style || ""
+            }`}
             >
-              {!deviceStates[card.id] && (
-                <img
-                  src={InactiveIcon}
-                  alt="Inactive"
-                  className="inactive-icon"
-                />
-              )}
+              {!deviceStates[card.id] &&
+                typeof statusMap[card.id]?.data?.temperature === "number" && (
+                  <img
+                    src={Linactive}
+                    alt="Linactive"
+                    className="Linactive-icon"
+                  />
+                )}
 
               <div className="card-text">{card.label}</div>
 
@@ -286,36 +292,16 @@ function Home() {
                 <button
                   className={`toggle-btn ${
                     deviceStates[card.id] ? "toggled" : ""
-                  }`}
+                  } ${loadingStates[index] ? "loading" : ""}`}
                   onClick={() => toggleCard(index, card.id)}
                   disabled={loadingStates[index]}
+                  title={loadingStates[index] ? "Түр хүлээнэ үү..." : ""}
                 >
-                  {loadingStates[index] ? (
-                    <div className="thumb loading-spinner"></div>
-                  ) : (
-                    <div className="thumb"></div>
-                  )}
+                  <div className="thumb">
+                    {loadingStates[index] && <div className="spinner"></div>}
+                  </div>
                 </button>
               )}
-              <Button
-                className="delete-btn"
-                onClick={() => {
-                  setBaseCards((prev) => prev.filter((c) => c.id !== card.id));
-                  setStatusMap((prev) => {
-                    const newMap = { ...prev };
-                    delete newMap[card.id];
-                    return newMap;
-                  });
-                  setDeviceStates((prev) => {
-                    const newStates = { ...prev };
-                    delete newStates[card.id];
-                    return newStates;
-                  });
-                }}
-                style={{ marginLeft: "8px" }}
-              >
-                Delete
-              </Button>
 
               {deviceStates[card.id] && (
                 <Button
@@ -345,7 +331,7 @@ function Home() {
                       {statusMap[card.id]?.data?.humidity ?? "Мэдээлэл алга"} %
                     </>
                   ) : (
-                    <>Холболт салсан</>
+                    <>Унтарсан</>
                   )}
                 </div>
               ) : card.id === "VIOT_E99614" ? (
@@ -356,7 +342,7 @@ function Home() {
                   {deviceStates["VIOT_E99614"]
                     ? statusMap["VIOT_E99614"]?.data?.temperature ??
                       "Мэдээлэл алга"
-                    : "Холболт салсан"}{" "}
+                    : "Унтарсан"}{" "}
                   °C
                 </div>
               ) : null}
@@ -426,7 +412,7 @@ function Home() {
             if (!baseCards.find((c) => c.id === selectedDevice.clientId)) {
               const newCard = {
                 id: selectedDevice.clientId,
-                style: "green",
+                style: "temp",
                 showToggle: true,
                 label: `${selectedDevice.entity} - ${selectedDevice.category}`,
               };
