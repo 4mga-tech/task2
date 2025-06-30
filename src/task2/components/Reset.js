@@ -2,17 +2,17 @@ import React, { useState } from "react";
 import axiosInstance from "../axiosInstance";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import "../../task1/Login.css";
 import { Form, Input, Button } from "antd";
+import { MessageTwoTone } from "@ant-design/icons";
+import { faPhone, faAngleLeft } from "@fortawesome/free-solid-svg-icons";
+
 function Reset() {
   const [form] = Form.useForm();
   const [phone, setPhone] = useState("");
-  // const [otp, setOtp] = useState("");
   const [step, setStep] = useState(1);
   const [error, setError] = useState("");
   const navigate = useNavigate();
-
 
   const handleSendOtp = async (values) => {
     const cleanedPhone = values.phone.trim();
@@ -20,9 +20,11 @@ function Reset() {
     setError("");
 
     try {
-      const res = await axiosInstance.post("/user/request-reset-otp", {
+      const res = await axiosInstance.post("/user/reset-verify-otp", {
         phoneNumber: cleanedPhone,
+        action: "request",
       });
+
       console.log("Otp req response:", res.data);
 
       if (res.status === 200) {
@@ -41,18 +43,39 @@ function Reset() {
       }
     }
   };
+  const [, setResendMessage] = useState("");
+
+  const handleResendOtp = async () => {
+    setError("");
+    setResendMessage("");
+    try {
+      const res = await axiosInstance.post("/user/reset-verify-otp", {
+        phoneNumber: phone,
+        action: "resend",
+      });
+      if (res.status === 200) {
+        setResendMessage("OTP дахин илгээгдлээ.");
+      } else {
+        setError(res.data.message || "Failed to resend OTP");
+      }
+    } catch (err) {
+      setError("Failed to resend OTP");
+    }
+  };
 
   const handleVerifyOtp = async (values) => {
+    console.log("Verifying OTP:", values);
     setError("");
     try {
       const res = await axiosInstance.post("/user/reset-verify-otp", {
         phoneNumber: phone,
         otp: values.otp,
+        action: "verify",
       });
 
       if (res.data.resetToken) {
         navigate("/reset-password", {
-          state: { phoneNumber: phone, resetToken:res.data.resetToken },
+          state: { phoneNumber: phone, resetToken: res.data.resetToken },
         });
       } else {
         setError("Incorrect OTP");
@@ -61,15 +84,39 @@ function Reset() {
       setError("Verification failed");
     }
   };
-  // console.log("Current step:", step);
 
   return (
     <div className="login-layout">
       <div className="reg-container">
-        <div className="font">
-          <FontAwesomeIcon icon={faXmark} />
-        </div>
-        <h1>{step === 1 ? "Reset Password" : "Enter OTP"}</h1>
+        <h1>
+          {step === 1 ? (
+            <>
+              <MessageTwoTone style={{ marginRight: 8 }} />
+              Нууц үгээ мартсан
+            </>
+          ) : (
+            "Код оруулна уу"
+          )}
+        </h1>
+
+        {step === 2 && (
+          <>
+            <div
+              onClick={handleResendOtp}
+              style={{
+                cursor: "pointer",
+                color: "green",
+                fontWeight: "bold",
+                userSelect: "none",
+                position:"absolute",
+                bottom:"300px",
+                right:"30px"
+              }}
+            >
+              Код дахин илгээх
+            </div>
+          </>
+        )}
 
         <Form
           form={form}
@@ -79,13 +126,22 @@ function Reset() {
         >
           {step === 1 ? (
             <Form.Item
-              label="Phone Number"
+              label="Утасны дугаар"
               name="phone"
               rules={[
                 { required: true, message: "Please enter your phone number" },
               ]}
             >
-              <Input />
+              <Input
+                className="antBtn"
+                placeholder="Утасны дугаар оруулна уу"
+                prefix={
+                  <FontAwesomeIcon
+                    icon={faPhone}
+                    style={{ color: "#aaa", fontSize: "13px" }}
+                  />
+                }
+              />
             </Form.Item>
           ) : (
             <Form.Item
@@ -104,19 +160,37 @@ function Reset() {
           )}
 
           <Form.Item>
-            <Button type="primary" htmlType="submit" block className="loginbtn">
-              {step === 1 ? "Send OTP" : "Verify OTP"}
+            <Button
+              type="primary"
+              htmlType="submit"
+              block
+              className="loginbtn"
+              style={{ fontSize: "17px" }}
+            >
+              {step === 1 ? "Үргэлжлүүлэх" : "Баталгаажуулах"}
             </Button>
           </Form.Item>
+          <div>
+            <span
+              onClick={() => navigate("/login")}
+              style={{
+                cursor: "pointer",
+                position: "absolute",
+                top: "11px",
+                left: "30px",
+              }}
+            >
+              <FontAwesomeIcon icon={faAngleLeft} /> Буцах
+            </span>
+          </div>
         </Form>
 
         <div className="signup">
-          Remember password?{" "}
           <span
             onClick={() => navigate("/login")}
-            style={{ cursor: "pointer" }}
+            style={{ cursor: "pointer", fontSize: "17px" }}
           >
-            Login
+            Нэвтрэх
           </span>
         </div>
       </div>

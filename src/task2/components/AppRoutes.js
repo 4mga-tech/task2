@@ -11,6 +11,7 @@ import { UserContext } from "../UserContext";
 import Reg from "./Reg";
 import Reset from "./Reset";
 import ResetPassword from "./ResetPassword";
+
 function AppRoutes() {
   const { isAuthenticated, login } = useContext(UserContext);
 
@@ -22,7 +23,8 @@ function AppRoutes() {
       <Route path="/reg" element={<Reg />} />
       <Route path="/reset" element={<Reset />} />
       <Route path="/reset-password" element={<ResetPassword />} />
-      <Route path="/resetpassword" element={<ResetPassword />} />
+      <Route path="/resetpassword"element={<ResetPassword />} />
+      
       <Route element={<Layout />}>
         <Route
           path="/"

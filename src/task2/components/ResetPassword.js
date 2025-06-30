@@ -25,10 +25,11 @@ function ResetPassword() {
     }
 
     try {
-      const res = await axiosInstance.post("/user/reset", {
+      const res = await axiosInstance.post("/user/reset-verify-otp", {
         phoneNumber,
         resetToken,
         newPassword: values.password,
+        action: "verify",
       });
 
       if (res.data.message) {

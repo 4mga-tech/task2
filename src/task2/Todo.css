@@ -1,5 +1,5 @@
 .todo-container {
-  background: #fff ;
+  background: #fff;
   padding: 24px;
   max-width: 500px;
   margin: 40px auto;
@@ -51,7 +51,7 @@
 }
 
 .todo-item button {
-  margin-left:4px;
+  margin-left: 4px;
   padding: 6px 12px;
   background-color: #28a745;
   color: white;
@@ -79,57 +79,3 @@
     width: 100%;
   }
 }
-@media (prefers-color-scheme: dark) {
-  .todo-container {
-    background: #121212;
-    color: #eee;
-    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
-    height: 100vh;
-  }
-
-  .todo-item {
-    background: #1e1e1e;
-    border: 1px solid #444;
-    color: #ddd;
-  }
-
-  .todo-item button {
-    background-color: #388e3c; 
-    color: #eee;
-  }
-
-  .todo-item button:last-child {
-    background-color: #b00020; 
-  }
-
-  .todo-item button:hover {
-    opacity: 0.8;
-  }
-
-  .todo-input button {
-    background-color: #1976d2; 
-    color: white;
-  }
-
-  input[type="text"] {
-    background: #222;
-    color: #eee;
-    border: 1px solid #444;
-  }
-
-  .ant-modal-content {
-    background: #222;
-    color: #eee;
-  }
-
-  .ant-modal-header {
-    border-bottom: 1px solid #444;
-  }
-
-  .ant-modal-footer {
-    border-top: 1px solid #444;
-  }
-}
-
-
-

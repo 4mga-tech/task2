@@ -17,59 +17,6 @@ body {
   margin: 0;
   padding: 0;
 }
-.darkk {
-  position: absolute;
-  top: 35px;
-  right: 200px;
-}
-body.dark {
-  background-color: #121212;
-  color: #ffffff;
-}
-
-body.dark .layout,
-body.dark .main-content,
-body.dark .card-grid,
-body.dark .card,
-body.dark .header,
-body.dark .menu,
-body.dark .ant-layout,
-body.dark .ant-layout-content,
-body.dark .ant-layout-header,
-body.dark .ant-layout-sider,
-body.dark .ant-layout-footer {
-  background-color: #2c2c2c !important;
-  color: white !important;
-}
-
-body.dark .ant-select-selector,
-body.dark .ant-input,
-body.dark .ant-btn,
-body.dark .ant-dropdown-menu,
-body.dark .ant-menu,
-body.dark .ant-modal-content,
-body.dark .ant-select-dropdown body.dark {
-  background-color: #363636 !important;
-  color: #ffffff !important;
-  border-color: #fffdfd !important;
-}
-
-body.dark .ant-menu-item-selected {
-  background-color: #333 !important;
-}
-
-body.dark .toggle-btn,
-.card {
-  background-color: #333;
-  border: 1px solid #555;
-}
-body.dark .toggle-btn.toggled {
-  background-color: green;
-}
-body.dark .schedule-button {
-  background-color: #2e2e2e;
-  color: white;
-}
 
 .header {
   grid-area: header;
@@ -114,10 +61,6 @@ body.dark .schedule-button {
   overflow: hidden;
   margin-left: 30px;
 }
-body.dark .right-section {
-  background-color: #2e2e2e;
-}
-
 
 select {
   padding: 8px;
@@ -247,7 +190,6 @@ select {
   position: absolute;
   top: 0;
   left: 0;
-  
 }
 .toggle-btn.toggled {
   background-color: rgb(49, 183, 49);

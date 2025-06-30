@@ -1,5 +1,5 @@
 .login-layout {
-  background-image: linear-gradient(to right, #5bc5e3, #8d3ae8);
+  background-color: transparent;
   height: 100vh;
   width: 100%;
   display: flex;
@@ -14,9 +14,10 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  background-color: #fff;
+  background-color: transparent;
   position: relative;
   border-radius: 10px;
+  line-height: 1px;
 }
 .reg-container .input input {
   height: 30px;
@@ -37,11 +38,9 @@ h1 {
   padding-top: 0;
   margin-bottom: 3rem;
 }
-.input {
-  width: 400px;
-}
+
 .input input {
-  height: 40px;
+  height: 0px;
   font-size: 14px;
 }
 .input label {
@@ -49,46 +48,52 @@ h1 {
 }
 
 .loginbtn {
-  padding: 12px 24px;
-  font-size: 20px;
+  padding: 20px;
+  font-size: 16px;
   width: 100%;
-  background-image: linear-gradient(to right, #5bc5e3, #8d3ae8);
+  background-color: #39b54a;
   color: white;
   border: 1.5px dashed #1890ff;
-  border-radius: 3px;
+  border-radius: 10px;
   cursor: pointer;
-  margin-top: 1rem;
+  margin-top: 1.5rem;
+  height: 46px;
+}
+.loginbtn:disabled{
+  background-color: #d9d9d9 !important;
+  border: 1.5px dashed #ccc !important;
+  cursor: not-allowed;
+  color: #888 !important;
 }
 
 .forgot {
-  color: rgb(135, 192, 220);
   margin-top: 0.5rem;
   margin-bottom: 1rem;
+  text-align: right;
 }
 .signup {
   margin-top: 1.7rem;
   margin-bottom: 1.7rem;
 }
-.signup span {
-  color: rgb(135, 192, 220);
-}
+
 .font {
   position: absolute;
-  right: 10px;
+  left: 30px;
   top: 10px;
 }
-.back{
-  position: absolute;
-  top: 0;
-  left: 0;
-  margin-left: 20px;
-  margin-top: 20px;
-}
+
 .container input.ant-input,
 .container input.ant-input-affix-wrapper {
   background-color: white !important;
   color: black !important;
-  border-color: #d9d9d9; 
+  border-color: #d9d9d9;
 }
-
-
+.loginHead {
+  width: 450px;
+}
+.antBtn{
+  height: 55px;
+}
+.regBtn{
+  height: 50px;
+}

@@ -1,22 +1,21 @@
 import "./Login.css";
 import React, { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "../task2/axiosInstance";
 import { Button, Form, Input } from "antd";
 import Cookies from "js-cookie";
-
+import { faLock, faUser } from "@fortawesome/free-solid-svg-icons";
 function Login({ login }) {
   const [error, setError] = useState("");
   const navigate = useNavigate();
-
+  const [form] = Form.useForm();
   const onFinish = async (values) => {
-    const { email, password } = values;
+    const { phone, password } = values;
     try {
       const result = await axiosInstance.post(
-        "http://localhost:3000/api/user/login",
-        { email, password },
+        "user/login",
+        { phoneNumber: phone, password },
         { withCredentials: true }
       );
       console.log("data", result.data);
@@ -24,7 +23,6 @@ function Login({ login }) {
         const user = result.data.user;
         Cookies.set("accessToken", result.data.accessToken);
         Cookies.set("userName", user.name);
-        Cookies.set("userEmail", user.email);
         Cookies.set("userId", user._id);
         Cookies.set("loginTime", Date.now());
 
@@ -41,55 +39,102 @@ function Login({ login }) {
   return (
     <div className="login-layout">
       <div className="container">
-        <div className="font">
-          <FontAwesomeIcon icon={faXmark} />
-        </div>
-        <h1>Login Form</h1>
+        <h1>
+          <img
+            src="/images/loginHead1.svg"
+            alt="loginhead"
+            className="loginHead"
+          />
+        </h1>
         <Form
+          form={form}
           layout="vertical"
           onFinish={onFinish}
           style={{ width: "100%", maxWidth: 400 }}
+          onFieldsChange={() => {
+            setError("");
+          }}
         >
           <Form.Item
-            label="Email or phone"
-            name="email"
-            rules={[{ required: true, message: "Please enter your email" }]}
+            label="Утасны дугаар"
+            name="phone"
+            rules={[{ required: true, message: "Please enter your phone number" }]}
           >
-            <Input size="large" />
+            <Input
+              className="antBtn"
+              placeholder="Утасны дугаар оруулна уу"
+              size="large"
+              prefix={
+                <FontAwesomeIcon
+                  icon={faUser}
+                  style={{ color: "#aaa", fontSize: "13px" }}
+                />
+              }
+            />
           </Form.Item>
 
           <Form.Item
-            label="Password"
+            label="Нууц үг"
             name="password"
             rules={[{ required: true, message: "Please enter your password" }]}
           >
-            <Input.Password size="large" />
+            <Input.Password
+              className="antBtn"
+              placeholder=" Нууц үгээ оруулна уу"
+              size="large"
+              prefix={
+                <FontAwesomeIcon
+                  icon={faLock}
+                  style={{ color: "#aaa", fontSize: "13px" }}
+                />
+              }
+            />
           </Form.Item>
 
           {error && (
             <div style={{ color: "red", marginTop: "10px" }}>{error}</div>
           )}
 
-          <div
-            className="forgot"
-            onClick={() => navigate("/reset")}
-            style={{ cursor: "pointer" }}
-          >
-            Forgot Password?
+          <div style={{ width: "100%", textAlign: "right" }}>
+            <span
+              className="forgot"
+              onClick={() => navigate("/reset")}
+              style={{ cursor: "pointer", color: "#39b54a" }}
+            >
+              Нууц үгээ мартсан уу?
+            </span>
           </div>
 
           <Form.Item>
-            <Button type="primary" htmlType="submit" className="loginbtn" block>
-              Login
+            <Button
+              type="primary"
+              htmlType="submit"
+              className="loginbtn"
+              block
+              disabled={
+                !form.isFieldsTouched(true) ||
+                form.getFieldsError().some(({ errors }) => errors.length)
+              }
+            >
+              <strong>Нэвтрэх</strong>
             </Button>
           </Form.Item>
         </Form>
 
         <div className="signup">
-          Not a Member?{" "}
-          <span onClick={() => navigate("/reg")} style={{ cursor: "pointer" }}>
-            Signup now
-          </span>
+          <Button
+            onClick={() => navigate("/reg")}
+            style={{
+              cursor: "pointer",
+              border: "none",
+              background: "transparent",
+              boxShadow: "none",
+            }}
+          >
+            <span>
+              <strong>Шинээр бүртгүүлэх</strong>
+            </span>
+          </Button>
         </div>
       </div>
     </div>

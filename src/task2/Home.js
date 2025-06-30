@@ -11,6 +11,7 @@ import cloudImg from "../icons/ab_multi-cloud.jpg";
 import { UserOutlined, WalletOutlined } from "@ant-design/icons";
 
 function Home() {
+  const [userName, setUserName] = useState("");
   const [automationVisible, setAutomationVisible] = useState(false);
   const [scheduleListVisible, setScheduleListVisible] = useState(false);
   const [scheduledTasks, setScheduledTasks] = useState([]);
@@ -81,7 +82,12 @@ function Home() {
         });
     }, delay);
   };
-
+  useEffect(() => {
+    const name = Cookies.get("userName");
+    if (name) {
+      setUserName(name);
+    }
+  }, []);
   useEffect(() => {
     const token = Cookies.get("accessToken");
     const userId = Cookies.get("userId");
@@ -457,7 +463,7 @@ function Home() {
               <span>Профайл</span>
             </div>
             <div className="box-body">
-              <h3>Steve</h3>
+              <h3>{userName}</h3>
               <p>
                 Хувийн хуудас{" "}
                 <img
