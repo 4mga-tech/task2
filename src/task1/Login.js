@@ -23,10 +23,11 @@ function Login({ login }) {
         const user = result.data.user;
         Cookies.set("accessToken", result.data.accessToken);
         Cookies.set("userName", user.name);
+        Cookies.set("userPhone", user.phoneNumber);
         Cookies.set("userId", user._id);
         Cookies.set("loginTime", Date.now());
 
-        login();
+        login(result.data.accessToken, user.name, user.phoneNumber);
         navigate("/");
       } else {
         setError(result.data.message || "aldaa zaasan2");
@@ -58,7 +59,9 @@ function Login({ login }) {
           <Form.Item
             label="Утасны дугаар"
             name="phone"
-            rules={[{ required: true, message: "Please enter your phone number" }]}
+            rules={[
+              { required: true, message: "Please enter your phone number" },
+            ]}
           >
             <Input
               className="antBtn"

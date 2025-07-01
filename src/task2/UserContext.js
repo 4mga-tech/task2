@@ -8,17 +8,24 @@ export const UserContextProvider = ({ children }) => {
     !!Cookies.get("token")
   );
   const [userName, setUserName] = useState(Cookies.get("userName") || "");
-  const login = (token) => {
-    Cookies.set("token", token, { path: "/" });
-    Cookies.set("loginTime", Date.now().toString(), { path: "/" });
-    setUserName(Cookies.get("userName") || "");
-    setIsAuthenticated(true);
-  };
+  const [userPhone, setUserPhone] = useState(Cookies.get("userPhone") || "");
+  const login = (token, name, phoneNumber) => {
+  Cookies.set("token", token, { path: "/" });
+  Cookies.set("loginTime", Date.now().toString(), { path: "/" });
+  Cookies.set("userName", name, { path: "/" });
+  Cookies.set("userPhone", phoneNumber, { path: "/" });
+
+  setUserName(name);
+  setUserPhone(phoneNumber);
+  setIsAuthenticated(true);
+};
+
 
   const logout = () => {
     Cookies.remove("loginTime");
     Cookies.remove("token");
     Cookies.remove("userName");
+    Cookies.remove("userPhone");
     setUserName("");
     setIsAuthenticated(false);
   };
@@ -51,7 +58,9 @@ export const UserContextProvider = ({ children }) => {
   }, [isAuthenticated]);
 
   return (
-    <UserContext.Provider value={{ isAuthenticated, login, logout, userName }}>
+    <UserContext.Provider
+      value={{ isAuthenticated, login, logout, userName, userPhone, setUserName }}
+    >
       {children}
     </UserContext.Provider>
   );

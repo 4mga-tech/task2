@@ -3,20 +3,18 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
-import { Button, Modal, Form, Select, TimePicker, message } from "antd";
+import { Modal, Select, message } from "antd";
 import dayjs from "dayjs";
-// import InactiveIcon from "../icons/inactive.svg";
+
 import Linactive from "../icons/Linactive.svg";
 import cloudImg from "../icons/ab_multi-cloud.jpg";
 import { UserOutlined, WalletOutlined } from "@ant-design/icons";
 
 function Home() {
   const [userName, setUserName] = useState("");
-  const [automationVisible, setAutomationVisible] = useState(false);
-  const [scheduleListVisible, setScheduleListVisible] = useState(false);
-  const [scheduledTasks, setScheduledTasks] = useState([]);
+
   const [deviceSelectVisible, setDeviceSelectVisible] = useState(false);
-  const [availableDevices,] = useState([]);
+  const [availableDevices] = useState([]);
   const [selectedDevice, setSelectedDevice] = useState(null);
   const [statusLog, setStatusLog] = useState(() => {
     const saved = localStorage.getItem("statusLog");
@@ -30,12 +28,11 @@ function Home() {
 
     const newEntry = { timestamp, message };
     setStatusLog((prev) => {
-      const updated = [newEntry, ...prev]; // newest first
+      const updated = [newEntry, ...prev];
       localStorage.setItem("statusLog", JSON.stringify(updated));
       return updated;
     });
   };
-  const [form] = Form.useForm();
   const currentDate = dayjs().format("YYYY-MM-DD");
   const navigate = useNavigate();
   const [deviceStates, setDeviceStates] = useState({});
@@ -44,44 +41,7 @@ function Home() {
   const [statusMap, setStatusMap] = useState({});
   const [baseCards, setBaseCards] = useState([]);
   const [, setCurrentTime] = useState(dayjs().format("HH:mm:ss"));
-  const scheduleAutomation = (values) => {
-    const { deviceId, action, time } = values;
-    const targetTime = dayjs(time);
-    const now = dayjs();
 
-    const delay = targetTime.diff(now, "millisecond");
-    if (delay < 0) {
-      message.error("Time must be in the future");
-      return;
-    }
-
-    setScheduledTasks((prev) => [
-      ...prev,
-      { deviceId, action, time: targetTime.format("HH:mm") },
-    ]);
-
-    message.success(
-      `Scheduled to turn ${action} ${deviceId} at ${targetTime.format("HH:mm")}`
-    );
-
-    setTimeout(() => {
-      axios
-        .post(`http://localhost:3000/api/status/toggle/${deviceId}`, null, {
-          headers: { Authorization: `Bearer ${Cookies.get("accessToken")}` },
-        })
-        .then(() => {
-          setDeviceStates((prev) => ({
-            ...prev,
-            [deviceId]: action === "on",
-          }));
-          message.success(`${deviceId} turned ${action}`);
-        })
-        .catch((err) => {
-          console.error("Toggle error:", err);
-          message.error("Failed to toggle device");
-        });
-    }, delay);
-  };
   useEffect(() => {
     const name = Cookies.get("userName");
     if (name) {
@@ -125,7 +85,6 @@ function Home() {
         setDevices(deviceList);
         setLoadingStates(Array(deviceList.length).fill(false));
 
-        // Add temperature & humidity sensor devices to baseCards
         const tempHumidityDevices = deviceList.filter(
           (d) => d.category === "temperature & humidity sensor"
         );
@@ -136,7 +95,7 @@ function Home() {
             .filter((d) => !existingIds.includes(d.clientId))
             .map((d) => ({
               id: d.clientId,
-              style: "blue", // or any style you want
+              style: "blue",
               showToggle: true,
               label: `${d.entity} - ${d.category}`,
             }));
@@ -237,19 +196,6 @@ function Home() {
 
   return (
     <div className="main-content">
-      {/* <div className="topdiv1">
-        <div>
-          <div></div>
-          <Button>s</Button>
-        </div>
-        <div><Button>sa</Button></div>
-      </div>
-      <div className="topdiv2">
-        <div>1</div>
-        <div>2</div>
-        <div>3</div>
-        <div>4</div>
-      </div> */}
       <div className="left-section">
         <div className="card-grid">
           {baseCards.map((card, index) => (
@@ -295,17 +241,6 @@ function Home() {
                 </button>
               )}
 
-              {deviceStates[card.id] && (
-                <Button
-                  className="auto"
-                  onClick={() => setAutomationVisible(true)}
-                  type="primary"
-                  style={{ width: "60px" }}
-                >
-                  schedule
-                </Button>
-              )}
-
               {card.category === "temperature & humidity sensor" ||
               card.label
                 .toLowerCase()
@@ -342,56 +277,6 @@ function Home() {
           ))}
         </div>
 
-        <Modal
-          title="Schedule Automation"
-          open={automationVisible}
-          onCancel={() => setAutomationVisible(false)}
-          onOk={() => {
-            form.validateFields().then((values) => {
-              scheduleAutomation(values);
-              form.resetFields();
-              setAutomationVisible(false);
-            });
-          }}
-        >
-          <Form form={form} layout="vertical">
-            <Form.Item
-              name="action"
-              label="Action"
-              rules={[{ required: true }]}
-            >
-              <Select placeholder="Choose action">
-                <Select.Option value="on">Turn ON</Select.Option>
-                <Select.Option value="off">Turn OFF</Select.Option>
-              </Select>
-            </Form.Item>
-
-            <Form.Item name="time" label="Time" rules={[{ required: true }]}>
-              <TimePicker format="HH:mm" />
-            </Form.Item>
-          </Form>
-        </Modal>
-
-        <Modal
-          title="Scheduled Automations"
-          open={scheduleListVisible}
-          onCancel={() => setScheduleListVisible(false)}
-          footer={null}
-        >
-          {scheduledTasks.length === 0 ? (
-            <p>No scheduled tasks</p>
-          ) : (
-            <ul>
-              {scheduledTasks.map((task, index) => (
-                <li key={index}>
-                  <strong>Device:</strong> VIOT_E99614| <strong>Action:</strong>{" "}
-                  {task.action.toUpperCase()} | <strong>Time:</strong>{" "}
-                  {task.time}
-                </li>
-              ))}
-            </ul>
-          )}
-        </Modal>
         <Modal
           title="Select device to add bro"
           open={deviceSelectVisible}

@@ -12,7 +12,7 @@
   gap: 16px;
   width: 50vh;
   flex-wrap: nowrap;
-  height: 80vh; /* Set height to viewport */
+  height: 80vh;
   overflow-y: auto;
 }
 
@@ -30,7 +30,6 @@
   align-items: center;
   justify-content: center;
   font-size: 24px;
-  height: 150px;
 }
 
 .profile-right {
@@ -38,63 +37,36 @@
   background-color: #f1f5f9;
   border-radius: 12px;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
   width: 50vw;
-  height: 60vh;
+  height: auto;
   margin-left: 50px;
-  text-align: center;
 }
+
 .profile-header {
   display: flex;
   align-items: center;
   gap: 8px;
-  /* font-size: 40px; */
   font-weight: bold;
   margin-bottom: 12px;
   padding-left: 8px;
 }
+
 .profile-icon {
   font-size: 30px;
   margin-right: 5px;
 }
+
 .left-top {
   display: flex;
   flex-direction: column;
-  /* align-items: center; */
   justify-content: space-between;
   padding: 12px;
-  background-color: rgb(250 251 251);
+  background-color: rgb(250, 251, 251);
   border: 1px solid rgb(218, 218, 218);
-}
-.top-item {
-  display: flex;
-  flex-direction: row;
-  /* align-items: left; */
-  gap: 8px;
-  font-size: 18px;
-  font-weight: bold;
-}
-.right-top {
-  background-color: rgba(57, 181, 74, 1);
-  align-items: flex-start;
-  padding: 20px;
-  display: flex;
-}
-.premium-box {
-  background-color: rgba(21, 41, 75, 1);
-  border-radius: 10px;
-  height: 50px;
-  width: 200px;
-  padding: 20px;
-  color: white;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  gap: 0;
-}
-.left-bottom {
-  height: 500px;
+  height: 60vh;
 }
 
 .section-box {
@@ -102,9 +74,10 @@
   border-radius: 12px;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
   padding: 16px;
-  width: 50%;
+  width: 100%;
   box-sizing: border-box;
 }
+
 .section-header {
   display: flex;
   justify-content: space-between;
@@ -135,6 +108,7 @@
   width: 200px;
   margin-top: 20px;
 }
+
 .add-btn:hover {
   background-color: rgb(182, 240, 182) !important;
 }
@@ -155,22 +129,25 @@
   background-color: #f9f9f9;
   transition: 0.2s;
 }
+
 .house-card button {
   width: 100%;
   height: auto;
-  /* text-align: left; */
 }
+
 .right-bottom {
-  height: 300px;
   background-color: white;
   border: 1px solid rgb(233, 232, 232);
+  padding: 16px;
+  width: 100%;
 }
+
 .right-bottom div {
   display: flex;
   flex-wrap: wrap;
   gap: 16px;
   justify-content: flex-start;
-  align-items: flex-start;  
+  align-items: flex-start;
 }
 
 .right-bottom button {
@@ -178,10 +155,6 @@
   height: 120px;
 }
 
-/* .right-bottom button{
-    height: 120px;
-    width: 120px;
-} */
 .share-btn {
   white-space: normal;
   word-break: break-word;
