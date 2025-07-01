@@ -14,7 +14,7 @@ function Home() {
   const [userName, setUserName] = useState("");
 
   const [deviceSelectVisible, setDeviceSelectVisible] = useState(false);
-  const [availableDevices] = useState([]);
+  const [availableDevices, setAvailableDevices] = useState([]);
   const [selectedDevice, setSelectedDevice] = useState(null);
   const [statusLog, setStatusLog] = useState(() => {
     const saved = localStorage.getItem("statusLog");
@@ -36,7 +36,7 @@ function Home() {
   const currentDate = dayjs().format("YYYY-MM-DD");
   const navigate = useNavigate();
   const [deviceStates, setDeviceStates] = useState({});
-  const [, setDevices] = useState([]);
+  // const [, setDevices] = useState([]);
   const [loadingStates, setLoadingStates] = useState([]);
   const [statusMap, setStatusMap] = useState({});
   const [baseCards, setBaseCards] = useState([]);
@@ -50,62 +50,58 @@ function Home() {
   }, []);
   useEffect(() => {
     const token = Cookies.get("accessToken");
-    const userId = Cookies.get("userId");
     if (!token) {
       navigate("/login");
       return;
     }
 
-    axios
-      .get(`http://localhost:3000/api/user/${userId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      .then((response) => {
-        console.log("Fetched user data:", response.data);
-      })
-      .catch((err) => {
-        console.error("Error fetching user data", err);
-      });
-  }, [navigate]);
+    const savedCards = localStorage.getItem("baseCards");
+    const parsedCards = savedCards ? JSON.parse(savedCards) : [];
+    console.log("Token:", token);
 
-  useEffect(() => {
-    const token = Cookies.get("accessToken");
-    if (!token) {
-      navigate("/login");
-      return;
-    }
     axios
       .get("http://localhost:3000/api/devices", {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => {
-        console.log("Device API response:", res.data);
         const deviceList = res.data;
-
-        setDevices(deviceList);
-        setLoadingStates(Array(deviceList.length).fill(false));
-
+        setAvailableDevices(deviceList);
         const tempHumidityDevices = deviceList.filter(
           (d) => d.category === "temperature & humidity sensor"
         );
 
-        setBaseCards((prev) => {
-          const existingIds = prev.map((c) => c.id);
-          const newCards = tempHumidityDevices
-            .filter((d) => !existingIds.includes(d.clientId))
-            .map((d) => ({
-              id: d.clientId,
-              style: "blue",
-              showToggle: true,
-              label: `${d.entity} - ${d.category}`,
-            }));
-          return [...prev, ...newCards];
-        });
+        const newCards = tempHumidityDevices
+          .filter((d) => !parsedCards.find((c) => c.id === d.clientId))
+          .map((d) => ({
+            id: d.clientId,
+            style: "blue",
+            showToggle: true,
+            label: `${d.entity} - ${d.category}`,
+          }));
+
+        const mergedCards = [...parsedCards, ...newCards];
+        setBaseCards(mergedCards);
+        localStorage.setItem("baseCards", JSON.stringify(mergedCards)); // Sync storage
       })
       .catch((err) => {
         console.error("Error fetching devices", err);
       });
   }, [navigate]);
+  useEffect(() => {
+    const token = Cookies.get("accessToken");
+
+    axios
+      .get("http://localhost:3000/api/devices", {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .then((res) => {
+        console.log("Available Devices:", res.data); // ← 👈 Add this
+        setAvailableDevices(res.data); // ← Don't forget to actually set it
+      })
+      .catch((err) => {
+        console.error("Failed to fetch available devices", err);
+      });
+  }, []);
 
   useEffect(() => {
     const token = Cookies.get("accessToken");
@@ -194,9 +190,30 @@ function Home() {
     localStorage.setItem("deviceStates", JSON.stringify(deviceStates));
   }, [deviceStates]);
 
+  const removeCard = (id) => {
+    setBaseCards((prev) => {
+      const updated = prev.filter((card) => card.id !== id);
+      localStorage.setItem("baseCards", JSON.stringify(updated));
+      return updated;
+    });
+    setDeviceStates((prev) => {
+      const updated = { ...prev };
+      delete updated[id];
+      localStorage.setItem("deviceStates", JSON.stringify(updated));
+      return updated;
+    });
+  };
+
   return (
     <div className="main-content">
       <div className="left-section">
+        <button
+          className="add-device-btn"
+          onClick={() => setDeviceSelectVisible(true)}
+        >
+          add device
+        </button>
+
         <div className="card-grid">
           {baseCards.map((card, index) => (
             <div
@@ -212,6 +229,13 @@ function Home() {
                 : card.style || ""
             }`}
             >
+              <button
+                className="remove-btn"
+                onClick={() => removeCard(card.id)}
+                title="Remove card"
+              >
+                Delete
+              </button>
               {typeof statusMap[card.id]?.data?.temperature === "number" &&
                 (!deviceStates[card.id] ||
                   (deviceStates[card.id] &&
@@ -282,40 +306,65 @@ function Home() {
           open={deviceSelectVisible}
           onCancel={() => setDeviceSelectVisible(false)}
           onOk={() => {
+            console.log("Modal onOk selectedDevice:", selectedDevice);
             if (!selectedDevice) {
               message.warning("pls select device");
               return;
             }
-            if (!baseCards.find((c) => c.id === selectedDevice.clientId)) {
-              const newCard = {
-                id: selectedDevice.clientId,
-                style: "temp",
-                showToggle: true,
-                label: `${selectedDevice.entity} - ${selectedDevice.category}`,
-              };
-              setBaseCards((prev) => [...prev, newCard]);
-              message.success("dev added");
-            } else {
-              message.info("dev already added");
-            }
-            setDeviceSelectVisible(false);
-            setSelectedDevice(null);
+
+            const token = Cookies.get("accessToken");
+
+            axios
+              .post(
+                `http://localhost:3000/api/devices/${selectedDevice._id}/register`,
+                null,
+                {
+                  headers: { Authorization: `Bearer ${token}` },
+                }
+              )
+              .then((res) => {
+                if (!baseCards.find((c) => c.id === selectedDevice._id)) {
+                  const newCard = {
+                    id: selectedDevice._id,
+                    style: "temp",
+                    showToggle: true,
+                    label: `${selectedDevice.entity} - ${selectedDevice.category}`,
+                  };
+                  setBaseCards((prev) => [...prev, newCard]);
+                  message.success("Device registered and added");
+                } else {
+                  message.info("Device already added");
+                }
+                setDeviceSelectVisible(false);
+                setSelectedDevice(null);
+              })
+              .catch((err) => {
+                console.error("Failed to register device", err);
+                message.error("Failed to register device");
+              });
           }}
         >
           <Select
             style={{ width: "100%" }}
             placeholder="choose a dev"
-            value={selectedDevice?.clientId || undefined}
-            onChange={(clientId) => {
-              const device = availableDevices.find(
-                (d) => d.clientId === clientId
-              );
+            labelInValue
+            value={
+              selectedDevice
+                ? {
+                    value: selectedDevice.deviceId,
+                    label: `${selectedDevice.deviceId} - ${selectedDevice.entity} / ${selectedDevice.category}`,
+                  }
+                : undefined
+            }
+            onChange={({ value }) => {
+              const device = availableDevices.find((d) => d._id === value);
+              console.log("Selected device from dropdown:", device);
               setSelectedDevice(device);
             }}
           >
             {availableDevices.map((device) => (
-              <Select.Option key={device.clientId} value={device.clientId}>
-                {device.clientId} - {device.entity} / {device.category}
+              <Select.Option key={device._id} value={device._id}>
+                {device.deviceId} - {device.entity} / {device.category}
               </Select.Option>
             ))}
           </Select>
