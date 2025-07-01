@@ -152,7 +152,7 @@ function Profile() {
             className="profile-icon"
             style={{ color: "green" }}
           />
-          <span style={{ fontSize: "30px" }}>Профайл</span>
+          <span style={{ fontSize: "30px" }}>Хувийн Мэдээлэл</span>
         </div>
         <div className="row">
           <div
@@ -163,39 +163,48 @@ function Profile() {
               justifyContent: "space-between",
             }}
           >
+            <img src="images/prof.svg" alt="profile" style={{height:"150px"}}/>
             <div style={{ display: "flex", alignItems: "center" }}>
-              <img
-                src="images/prof.svg"
-                alt="profile"
-                style={{ marginRight: 16 }}
-              />
               <div>
-                <p style={{ color: "black", marginBottom: 0 }}>{userName}</p>
-                <p style={{ color: "gray", marginBottom: 0 }}>{userPhone}</p>
+                <Form layout="vertical" style={{ width: 300 }}>
+                  <Form.Item label="Нэр">
+                    <Input
+                      value={userName}
+                      readOnly
+                      style={{ height: "40px" }}
+                    />
+                  </Form.Item>
+                  <Button
+                    style={{
+                      border: "1px solid gray",
+                      borderRadius: "10px",
+                      height: "30px",
+                      marginBottom: 24,
+                    }}
+                    onClick={() => openModal("name")}
+                  >
+                    Нэр солих
+                  </Button>
+
+                  <Form.Item label="Утасны дугаар">
+                    <Input
+                      value={userPhone}
+                      readOnly
+                      style={{ height: "40px" }}
+                    />
+                  </Form.Item>
+                  <Button
+                    style={{
+                      border: "1px solid gray",
+                      borderRadius: "10px",
+                      height: "30px",
+                    }}
+                    onClick={() => openModal("password")}
+                  >
+                    Нууц үг солих
+                  </Button>
+                </Form>
               </div>
-            </div>
-            <div>
-              <Button
-                style={{
-                  border: "1px solid gray",
-                  borderRadius: "30px",
-                  height: "40px",
-                }}
-                onClick={() => openModal("name")}
-              >
-                Нэр солих
-              </Button>
-              <Button
-                style={{
-                  marginLeft: 8,
-                  border: "1px solid gray",
-                  borderRadius: "30px",
-                  height: "40px",
-                }}
-                onClick={() => openModal("password")}
-              >
-                Нууц үг солих
-              </Button>
             </div>
           </div>
         </div>
@@ -258,7 +267,7 @@ function Profile() {
 
       <Modal
         title={modalType === "name" ? "Нэр засах" : "Нууц үг солих"}
-        visible={isModalVisible}
+        open={isModalVisible}
         onOk={handleOk}
         onCancel={handleCancel}
         okText="Хадгалах"
