@@ -16,7 +16,7 @@ function Home() {
   const [scheduleListVisible, setScheduleListVisible] = useState(false);
   const [scheduledTasks, setScheduledTasks] = useState([]);
   const [deviceSelectVisible, setDeviceSelectVisible] = useState(false);
-  const [availableDevices, setAvailableDevices] = useState([]);
+  const [availableDevices,] = useState([]);
   const [selectedDevice, setSelectedDevice] = useState(null);
   const [statusLog, setStatusLog] = useState(() => {
     const saved = localStorage.getItem("statusLog");
@@ -237,36 +237,20 @@ function Home() {
 
   return (
     <div className="main-content">
+      {/* <div className="topdiv1">
+        <div>
+          <div></div>
+          <Button>s</Button>
+        </div>
+        <div><Button>sa</Button></div>
+      </div>
+      <div className="topdiv2">
+        <div>1</div>
+        <div>2</div>
+        <div>3</div>
+        <div>4</div>
+      </div> */}
       <div className="left-section">
-        <Button
-          type="default"
-          style={{ marginBottom: "16px" }}
-          onClick={() => setScheduleListVisible(true)}
-        >
-          View Scheduled Tasks
-        </Button>
-        <Button
-          type="default"
-          style={{ marginBottom: "16px", marginLeft: "20px" }}
-          onClick={() => {
-            const token = Cookies.get("accessToken");
-            axios
-              .get("http://localhost:3000/api/devices", {
-                headers: { Authorization: `Bearer ${token}` },
-              })
-              .then((res) => {
-                setAvailableDevices(res.data);
-                setDeviceSelectVisible(true);
-              })
-              .catch((err) => {
-                console.error("Error load deviec:", err);
-                message.error("failed tp load devices");
-              });
-          }}
-        >
-          if u want add a device, click me oh
-        </Button>
-
         <div className="card-grid">
           {baseCards.map((card, index) => (
             <div
@@ -483,7 +467,7 @@ function Home() {
             </div>
             <div className="box-body">
               <h3 style={{ color: "#39b54a" }}>Premium</h3>
-              <p>2023.05.06 хүртэл</p>
+              <p>2030он хүртэл</p>
             </div>
           </div>
           <div className="status-box">

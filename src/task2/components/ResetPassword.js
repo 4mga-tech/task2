@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import axiosInstance from "../axiosInstance";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button, Form, Input } from "antd";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faAngleLeft, faLock } from "@fortawesome/free-solid-svg-icons";
 
 function ResetPassword() {
   const [form] = Form.useForm();
@@ -25,7 +27,7 @@ function ResetPassword() {
     }
 
     try {
-      const res = await axiosInstance.post("/user/reset-verify-otp", {
+      const res = await axiosInstance.post("/user/reset-password", {
         phoneNumber,
         resetToken,
         newPassword: values.password,
@@ -47,13 +49,19 @@ function ResetPassword() {
     <div className="login-layout">
       <div className="reg-container">
         <div>
-          <Button
-            type="primary"
-            className="back"
-            onClick={() => navigate("/reset")}
-          >
-            back
-          </Button>
+          <div>
+            <span
+              onClick={() => navigate("/reset")}
+              style={{
+                cursor: "pointer",
+                position: "absolute",
+                top: "11px",
+                left: "30px",
+              }}
+            >
+              <FontAwesomeIcon icon={faAngleLeft} /> Буцах
+            </span>
+          </div>
         </div>
         <h1>Set New Password</h1>
         <Form
@@ -67,7 +75,15 @@ function ResetPassword() {
             name="password"
             rules={[{ required: true, message: "Please enter new password" }]}
           >
-            <Input.Password />
+            <Input.Password
+              className="regBtn"
+              prefix={
+                <FontAwesomeIcon
+                  icon={faLock}
+                  style={{ color: "#aaa", fontSize: "13px" }}
+                />
+              }
+            />
           </Form.Item>
 
           <Form.Item
@@ -77,7 +93,15 @@ function ResetPassword() {
               { required: true, message: "Please confirm your password" },
             ]}
           >
-            <Input.Password />
+            <Input.Password
+              className="regBtn"
+              prefix={
+                <FontAwesomeIcon
+                  icon={faLock}
+                  style={{ color: "#aaa", fontSize: "13px" }}
+                />
+              }
+            />
           </Form.Item>
 
           {error && (

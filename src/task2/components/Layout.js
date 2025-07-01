@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { Outlet, Link, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faSchool,
   faHouse,
   faRobot,
   faUser,
@@ -10,6 +9,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { Select, Menu } from "antd";
 import Cookies from "js-cookie";
+import "../../task2/Home.css";
 
 const Layout = () => {
   const navigate = useNavigate();
@@ -79,21 +79,12 @@ const Layout = () => {
           alignItems: "center",
         }}
       >
-        <FontAwesomeIcon
-          icon={faSchool}
-          style={{ marginRight: "10px", marginLeft: "20px", fontSize: "24px" }}
+        <img
+          src="/images/loginHead1.svg"
+          alt="loginhead"
+          className="layout-img"
         />
-        <Link
-          to="/"
-          style={{
-            fontSize: "1.5rem",
-            marginRight: "auto",
-            textDecoration: "none",
-            color: "black",
-          }}
-        >
-          Must
-        </Link>
+
         <h2 style={{ marginRight: "5px" }}>Hi, {userName}</h2>
         <Select
           defaultValue="menu"

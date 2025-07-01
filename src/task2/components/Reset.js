@@ -20,7 +20,7 @@ function Reset() {
     setError("");
 
     try {
-      const res = await axiosInstance.post("/user/reset-verify-otp", {
+      const res = await axiosInstance.post("/user/reset-otp", {
         phoneNumber: cleanedPhone,
         action: "request",
       });
@@ -49,7 +49,7 @@ function Reset() {
     setError("");
     setResendMessage("");
     try {
-      const res = await axiosInstance.post("/user/reset-verify-otp", {
+      const res = await axiosInstance.post("/user/verify-reset-otp", {
         phoneNumber: phone,
         action: "resend",
       });
@@ -67,7 +67,7 @@ function Reset() {
     console.log("Verifying OTP:", values);
     setError("");
     try {
-      const res = await axiosInstance.post("/user/reset-verify-otp", {
+      const res = await axiosInstance.post("/user/verify-reset-otp", {
         phoneNumber: phone,
         otp: values.otp,
         action: "verify",
@@ -108,9 +108,9 @@ function Reset() {
                 color: "green",
                 fontWeight: "bold",
                 userSelect: "none",
-                position:"absolute",
-                bottom:"300px",
-                right:"30px"
+                position: "absolute",
+                bottom: "300px",
+                right: "30px",
               }}
             >
               Код дахин илгээх
@@ -151,7 +151,7 @@ function Reset() {
               name="otp"
               rules={[{ required: true, message: "Please enter the OTP" }]}
             >
-              <Input />
+              <Input className="regBtn" style={{ marginBottom: "20px" }} />
             </Form.Item>
           )}
 
@@ -165,7 +165,7 @@ function Reset() {
               htmlType="submit"
               block
               className="loginbtn"
-              style={{ fontSize: "17px" }}
+              style={{ fontSize: "17px", marginTop: "10px" }}
             >
               {step === 1 ? "Үргэлжлүүлэх" : "Баталгаажуулах"}
             </Button>
