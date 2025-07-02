@@ -1,18 +1,26 @@
-import React, {useEffect, useState} from "react";
-import cloudImg from "../icons/ab_multi-cloud.jpg";
-import { UserOutlined, WalletOutlined } from "@ant-design/icons";
-import { useNavigate } from "react-router-dom";
-import Cookies from "js-cookie"
+import React, { useEffect, useState } from "react";
+import { Modal, Button } from "antd";
+import Cookies from "js-cookie";
 import "../task2/Home.css";
 import dayjs from "dayjs";
+
 function Auto() {
-  const [userName, setUserName] = useState("");
-  const [statusLog, ] = useState(() => {
+  const [, setUserName] = useState("");
+  const [statusLog] = useState(() => {
     const saved = localStorage.getItem("statusLog");
     return saved ? JSON.parse(saved) : [];
   });
   const currentDate = dayjs().format("YYYY-MM-DD");
-  const navigate = useNavigate();
+
+  const [automated, setAutomated] = useState([]);
+  const [detailModalVisible, setDetailModalVisible] = useState(false);
+  const [selectedAutomation, setSelectedAutomation] = useState(null);
+  const deleteAutomation = (id) => {
+    const updated = automated.filter((d) => d.deviceId !== id);
+    setAutomated(updated);
+    localStorage.setItem("automatedDevices", JSON.stringify(updated));
+  };
+
   useEffect(() => {
     const name = Cookies.get("userName");
     if (name) {
@@ -20,45 +28,93 @@ function Auto() {
     }
   }, []);
 
+  useEffect(() => {
+    const saved = localStorage.getItem("automatedDevices");
+    if (saved) {
+      setAutomated(JSON.parse(saved));
+    }
+  }, []);
+
+  const showDetailModal = (automation) => {
+    setSelectedAutomation(automation);
+    setDetailModalVisible(true);
+  };
+
+  const handleModalClose = () => {
+    setDetailModalVisible(false);
+    setSelectedAutomation(null);
+  };
+
   return (
     <div className="main-content">
-      <div className="left-section">
-          <p>sfsf</p>
-      </div>
-      <div className="right-section">
-        <div>
-          <img className="cloud" src={cloudImg} alt="cloud" />
-        </div>
-        <div className="box-container">
-          <div className="box profile-box" onClick={() => navigate("/profile")}>
-            <div className="box-header">
-              <UserOutlined style={{ fontSize: 17 }} />
-              <span>Профайл</span>
-            </div>
-            <div className="box-body">
-              <h3>{userName}</h3>
+      <div className="Aleft-section">
+        <h2>Automation Schedule</h2>
+        {automated.length === 0 ? (
+          <p>No automated devices yet.</p>
+        ) : (
+          <ul>
+            {automated.map((d, i) => (
+              <li
+                key={i}
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <span>🛠 {d.label}</span>
+                <span>
+                  📅 {d.date} ⏰ {d.from} to {d.to} →
+                  {d.action === "on" ? " Асаах" : " Унтраах"}{" "}
+                  <Button type="link" onClick={() => showDetailModal(d)}>
+                    Дэлгэрэнгүй
+                  </Button>
+                  <Button
+                    danger
+                    type="link"
+                    onClick={() => deleteAutomation(d.deviceId)}
+                    style={{ marginLeft: 8 }}
+                  >
+                    Устгах
+                  </Button>
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        <Modal
+          title="Automation Details"
+          open={detailModalVisible}
+          onCancel={handleModalClose}
+          footer={[
+            <Button key="close" onClick={handleModalClose}>
+              Хаах
+            </Button>,
+          ]}
+        >
+          {selectedAutomation && (
+            <div>
               <p>
-                Хувийн хуудас{" "}
-                <img
-                  src="rightArrowSmall.svg"
-                  alt="arrow"
-                  width="6"
-                  height="8"
-                />
+                <strong>Төхөөрөмж:</strong> {selectedAutomation.label}
+              </p>
+              <p>
+                <strong>Үйлдлийн огноо:</strong> {selectedAutomation.date}
+              </p>
+              <p>
+                <strong>Цаг:</strong> {selectedAutomation.from} -{" "}
+                {selectedAutomation.to}
+              </p>
+              <p>
+                <strong>Үйлдэл:</strong>{" "}
+                {selectedAutomation.action === "on" ? "Асаах" : "Унтраах"}
               </p>
             </div>
-          </div>
-
-          <div className="box payment-box">
-            <div className="box-header">
-              <WalletOutlined style={{ fontSize: 16 }} />
-              <span>Төлбөрийн багц</span>
-            </div>
-            <div className="box-body">
-              <h3 style={{ color: "#39b54a" }}>Premium</h3>
-              <p>2023.05.06 хүртэл</p>
-            </div>
-          </div>
+          )}
+        </Modal>
+      </div>
+      <div className="right-section">
+        <div className="box-container">
           <div className="status-box">
             <h3
               style={{
@@ -71,7 +127,6 @@ function Auto() {
             </h3>
             <ul
               style={{
-                maxHeight: "180px",
                 overflowY: "auto",
                 paddingLeft: "20px",
               }}
@@ -122,4 +177,5 @@ function Auto() {
     </div>
   );
 }
+
 export default Auto;

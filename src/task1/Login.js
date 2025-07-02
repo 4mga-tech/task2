@@ -7,6 +7,16 @@ import { Button, Form, Input } from "antd";
 import Cookies from "js-cookie";
 import { faLock, faUser } from "@fortawesome/free-solid-svg-icons";
 function Login({ login }) {
+  const originalWarn = console.warn;
+  console.warn = (...args) => {
+    if (
+      typeof args[0] === "string" &&
+      args[0].includes("Instance created by `useForm` is not connected")
+    ) {
+      return;
+    }
+    originalWarn(...args);
+  };
   const [error, setError] = useState("");
   const navigate = useNavigate();
   const [form] = Form.useForm();
@@ -36,7 +46,6 @@ function Login({ login }) {
       setError("buruu bna");
     }
   };
-
   return (
     <div className="login-layout">
       <div className="container">
@@ -102,23 +111,14 @@ function Login({ login }) {
             <span
               className="forgot"
               onClick={() => navigate("/reset")}
-              style={{ cursor: "pointer", color: "#39b54a" }}
+              style={{ cursor: "pointer", color: "#1890ff" }}
             >
               Нууц үгээ мартсан уу?
             </span>
           </div>
 
           <Form.Item>
-            <Button
-              type="primary"
-              htmlType="submit"
-              className="loginbtn"
-              block
-              disabled={
-                !form.isFieldsTouched(true) ||
-                form.getFieldsError().some(({ errors }) => errors.length)
-              }
-            >
+            <Button type="primary" htmlType="submit" className="loginbtn">
               <strong>Нэвтрэх</strong>
             </Button>
           </Form.Item>

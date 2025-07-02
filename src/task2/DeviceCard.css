@@ -1,0 +1,95 @@
+.card {
+  position: relative;
+  color: white;
+  border-radius: 10px;
+  height: 140px;
+  padding: 10px 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  text-align: left;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.3s ease, boxshadow 0.3s ease;
+}
+
+.card:hover {
+  transform: scale(1.02);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  z-index: 10;
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 26px;
+}
+.card.default {
+  background-color: #b2eaff;
+  color: rgb(0, 0, 0);
+  border: 1px solid #bdbdbd;
+}
+.toggle-btn.loading {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+.toggle-btn.loading:hover {
+  border-color: #ff4d4f;
+}
+.toggle-btn {
+  position: absolute;
+  top: 18px;
+  right: 12px;
+  background-color: rgb(223, 219, 219);
+  border: 1px solid rgb(111, 107, 107);
+  border-radius: 99px;
+  width: 45px;
+  height: 24px;
+  transition: background-color 0.1s ease, border-color 0.2s ease;
+  cursor: pointer;
+  margin: 0;
+}
+
+.toggle-btn .thumb {
+  height: 22px;
+  width: 22px;
+  background-color: white;
+  border-radius: 99px;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+.toggle-btn.toggled {
+  background-color: rgb(49, 183, 49);
+}
+.toggle-btn.toggled .thumb {
+  left: calc(21.5px);
+}
+.toggle-btn:hover {
+  border-color: gray;
+}
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #999;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.Linactive-icon {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  width: 30px;
+  height: 30px;
+  opacity: 1;
+  z-index: 3;
+  opacity: 1;
+  pointer-events: none;
+
+}

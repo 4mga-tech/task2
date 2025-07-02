@@ -2,11 +2,15 @@ import React, { useState, useContext } from "react";
 import { Button, Modal, Input, Form, message } from "antd";
 import { SettingOutlined } from "@ant-design/icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faHeartCirclePlus } from "@fortawesome/free-solid-svg-icons";
+import {
+  faHeartCirclePlus,
+  faLightbulb,
+} from "@fortawesome/free-solid-svg-icons";
 import { UserContext } from "./UserContext";
 import axiosInstance from "./axiosInstance";
 import Cookies from "js-cookie";
 import "../task2/Profile.css";
+import {Popconfirm} from "antd";
 
 function Profile() {
   const { userName, userPhone, logout, setUserName } = useContext(UserContext);
@@ -163,7 +167,11 @@ function Profile() {
               justifyContent: "space-between",
             }}
           >
-            <img src="images/prof.svg" alt="profile" style={{height:"150px"}}/>
+            <img
+              src="images/prof.svg"
+              alt="profile"
+              style={{ height: "150px" }}
+            />
             <div style={{ display: "flex", alignItems: "center" }}>
               <div>
                 <Form layout="vertical" style={{ width: 300 }}>
@@ -255,110 +263,153 @@ function Profile() {
             <Button className="share-btn">
               <img src="/images/Union.svg" alt="req" /> Санал хүсэлт
             </Button>
-            <Button className="share-btn">
+            <Button className="share-btn" onClick={() => openModal("guide")}>
               <img src="/images/Union.svg" alt="sug" /> Заавар
             </Button>
-            <Button className="share-btn" onClick={logout}>
-              <img src="/images/log2.svg" alt="logout" /> Гарах
-            </Button>
+            <Popconfirm
+              title="Та системээс гарахдаа итгэлтэй байна уу?"
+              okText="Тийм"
+              cancelText="Үгүй"
+              onConfirm={logout}
+            >
+              <Button className="share-btn">
+                <img src="/images/log2.svg" alt="logout" /> Гарах
+              </Button>
+            </Popconfirm>
           </div>
         </div>
       </div>
 
       <Modal
-        title={modalType === "name" ? "Нэр засах" : "Нууц үг солих"}
+        title={
+          modalType === "name"
+            ? "Нэр засах"
+            : modalType === "password"
+            ? "Нууц үг солих"
+            : "Заавар"
+        }
         open={isModalVisible}
-        onOk={handleOk}
+        onOk={modalType === "guide" ? handleCancel : handleOk}
         onCancel={handleCancel}
-        okText="Хадгалах"
+        okText={modalType === "guide" ? "Хаах" : "Хадгалах"}
         cancelText="Буцах"
       >
-        <Form
-          form={form}
-          layout="vertical"
-          name="editProfileForm"
-          onValuesChange={() => {
-            if (modalType === "password") onPasswordChange();
-          }}
-        >
-          {modalType === "name" && (
-            <>
-              <Form.Item
-                label="Шинэ нэр"
-                name="newName"
-                rules={[{ required: true, message: "Нэр оруулна уу!" }]}
-              >
-                <Input />
-              </Form.Item>
-              <Form.Item
-                label="Одоогийн нууц үг"
-                name="currentPassword"
-                rules={[{ required: true, message: "Нууц үгээ оруулна уу!" }]}
-              >
-                <Input.Password />
-              </Form.Item>
-            </>
-          )}
+        {modalType === "guide" ? (
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "12px",
+              backgroundColor: "#1677ff",
+            }}
+          >
+            <h1 style={{ textAlign: "center", color: "white" }}>
+              <FontAwesomeIcon icon={faLightbulb} style={{ color: "white" }} />{" "}
+              Заавар
+            </h1>
+            <Button type="primary" className="guide">
+              Автоматжуулалт хэрхэн үүсгэх вэ?
+            </Button>
+            <Button type="primary" className="guide">
+              {" "}
+              Төхөөрөмж нэмэх
+            </Button>
+            <Button type="primary" className="guide">
+              {" "}
+              Хянах
+            </Button>
+          </div>
+        ) : (
+          <Form
+            form={form}
+            layout="vertical"
+            name="editProfileForm"
+            onValuesChange={() => {
+              if (modalType === "password") onPasswordChange();
+            }}
+          >
+            {modalType === "name" && (
+              <>
+                <Form.Item
+                  label="Шинэ нэр"
+                  name="newName"
+                  rules={[{ required: true, message: "Нэр оруулна уу!" }]}
+                >
+                  <Input />
+                </Form.Item>
+                <Form.Item
+                  label="Одоогийн нууц үг"
+                  name="currentPassword"
+                  rules={[{ required: true, message: "Нууц үгээ оруулна уу!" }]}
+                >
+                  <Input.Password />
+                </Form.Item>
+              </>
+            )}
 
-          {modalType === "password" && (
-            <>
-              <Form.Item
-                label="Одоогийн нууц үг"
-                name="currentPassword"
-                rules={[
-                  { required: true, message: "Одоогийн нууц үгээ оруулна уу!" },
-                ]}
-              >
-                <Input.Password />
-              </Form.Item>
-              <Form.Item
-                label="Шинэ нууц үг"
-                name="newPassword"
-                rules={[
-                  { required: true, message: "Шинэ нууц үгээ оруулна уу!" },
-                  {
-                    min: 8,
-                    message: "Нууц үг хамгийн багадаа 8 тэмдэгт байх ёстой",
-                  },
-                  {
-                    max: 15,
-                    message: "Нууц үг хамгийн ихдээ 15 тэмдэгт байх ёстой",
-                  },
-                  {
-                    pattern: /[@_*.\-!#$%^&+=]/,
-                    message: "Нууц үг тусгай тэмдэгт агуулсан байх ёстой",
-                  },
-                  {
-                    pattern: /\d/,
-                    message: "Нууц үг тоо агуулсан байх ёстой",
-                  },
-                ]}
-              >
-                <Input.Password />
-              </Form.Item>
-              <Form.Item
-                label="Шинэ нууц үг давтах"
-                name="confirmPassword"
-                dependencies={["newPassword"]}
-                rules={[
-                  { required: true, message: "Нууц үгээ давтан оруулна уу!" },
-                  ({ getFieldValue }) => ({
-                    validator(_, value) {
-                      if (!value || getFieldValue("newPassword") === value) {
-                        return Promise.resolve();
-                      }
-                      return Promise.reject(
-                        new Error("Нууц үг таарахгүй байна!")
-                      );
+            {modalType === "password" && (
+              <>
+                <Form.Item
+                  label="Одоогийн нууц үг"
+                  name="currentPassword"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Одоогийн нууц үгээ оруулна уу!",
                     },
-                  }),
-                ]}
-              >
-                <Input.Password />
-              </Form.Item>
-            </>
-          )}
-        </Form>
+                  ]}
+                >
+                  <Input.Password />
+                </Form.Item>
+                <Form.Item
+                  label="Шинэ нууц үг"
+                  name="newPassword"
+                  rules={[
+                    { required: true, message: "Шинэ нууц үгээ оруулна уу!" },
+                    {
+                      min: 8,
+                      message: "Нууц үг хамгийн багадаа 8 тэмдэгт байх ёстой",
+                    },
+                    {
+                      max: 15,
+                      message: "Нууц үг хамгийн ихдээ 15 тэмдэгт байх ёстой",
+                    },
+                    {
+                      pattern: /[@_*.\-!#$%^&+=]/,
+                      message: "Нууц үг тусгай тэмдэгт агуулсан байх ёстой",
+                    },
+                    {
+                      pattern: /\d/,
+                      message: "Нууц үг тоо агуулсан байх ёстой",
+                    },
+                  ]}
+                >
+                  <Input.Password />
+                </Form.Item>
+                <Form.Item
+                  label="Шинэ нууц үг давтах"
+                  name="confirmPassword"
+                  dependencies={["newPassword"]}
+                  rules={[
+                    { required: true, message: "Нууц үгээ давтан оруулна уу!" },
+                    ({ getFieldValue }) => ({
+                      validator(_, value) {
+                        if (!value || getFieldValue("newPassword") === value) {
+                          return Promise.resolve();
+                        }
+                        return Promise.reject(
+                          new Error("Нууц үг таарахгүй байна!")
+                        );
+                      },
+                    }),
+                  ]}
+                >
+                  <Input.Password />
+                </Form.Item>
+              </>
+            )}
+          </Form>
+        )}
 
         {modalType === "password" && (
           <div style={{ marginTop: 12, fontSize: 14, color: "#555" }}>

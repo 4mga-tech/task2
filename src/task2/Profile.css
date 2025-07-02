@@ -162,3 +162,11 @@
   padding: 4px 8px;
   font-size: 12px;
 }
+.guide{
+  height: 70px;
+  width: 20vw;
+  background-color: white;
+  color: black;
+  margin-left: 20px;
+  margin-bottom: 10px;
+}

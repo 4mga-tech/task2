@@ -1,21 +1,25 @@
 import "./Home.css";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import DeviceCardd from "./DeviceCardd";
 import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
 import { Modal, Select, message } from "antd";
 import dayjs from "dayjs";
-
-import Linactive from "../icons/Linactive.svg";
-import cloudImg from "../icons/ab_multi-cloud.jpg";
-import { UserOutlined, WalletOutlined } from "@ant-design/icons";
-
+import { TimePicker, DatePicker } from "antd";
+import { Radio } from "antd";
 function Home() {
-  const [userName, setUserName] = useState("");
-
+  const [, setUserName] = useState("");
+  const [automationDate, setAutomationDate] = useState(null);
+  const [automationAction, setAutomationAction] = useState("on");
   const [deviceSelectVisible, setDeviceSelectVisible] = useState(false);
   const [availableDevices, setAvailableDevices] = useState([]);
   const [selectedDevice, setSelectedDevice] = useState(null);
+  const [automationModalVisible, setAutomationModalVisible] = useState(false);
+  const [automationDevice, setAutomationDevice] = useState(null);
+  const [automationTime, setAutomationTime] = useState([]);
+  useState(null);
+
   const [statusLog, setStatusLog] = useState(() => {
     const saved = localStorage.getItem("statusLog");
     return saved ? JSON.parse(saved) : [];
@@ -36,12 +40,43 @@ function Home() {
   const currentDate = dayjs().format("YYYY-MM-DD");
   const navigate = useNavigate();
   const [deviceStates, setDeviceStates] = useState({});
-  // const [, setDevices] = useState([]);
   const [loadingStates, setLoadingStates] = useState([]);
   const [statusMap, setStatusMap] = useState({});
   const [baseCards, setBaseCards] = useState([]);
   const [, setCurrentTime] = useState(dayjs().format("HH:mm:ss"));
+  const handleAutomationSave = () => {
+    if (!automationDevice || automationTime.length !== 2 || !automationDate) {
+      message.warning("Device, date, and time range are required");
+      return;
+    }
 
+    const automation = {
+      deviceId: automationDevice._id,
+      date: automationDate.format("YYYY-MM-DD"),
+      from: automationTime[0].format("HH:mm"),
+      to: automationTime[1].format("HH:mm"),
+      label: automationDevice.entity,
+      action: automationAction,
+    };
+
+    const stored = JSON.parse(localStorage.getItem("automatedDevices") || "[]");
+
+    const alreadyExists = stored.some(
+      (item) => item.deviceId === automation.deviceId
+    );
+    if (alreadyExists) {
+      message.warning("This device already has an automation.");
+      return;
+    }
+
+    stored.push(automation);
+    localStorage.setItem("automatedDevices", JSON.stringify(stored));
+
+    message.success("Automation saved!");
+    setAutomationModalVisible(false);
+    setAutomationDevice(null);
+    setAutomationTime([]);
+  };
   useEffect(() => {
     const name = Cookies.get("userName");
     if (name) {
@@ -58,6 +93,7 @@ function Home() {
     const savedCards = localStorage.getItem("baseCards");
     const parsedCards = savedCards ? JSON.parse(savedCards) : [];
     console.log("Token:", token);
+    console.log("AccessToken:", Cookies.get("accessToken"));
 
     axios
       .get("http://localhost:3000/api/devices", {
@@ -69,12 +105,14 @@ function Home() {
         const tempHumidityDevices = deviceList.filter(
           (d) => d.category === "temperature & humidity sensor"
         );
-
+        const registered = JSON.parse(
+          localStorage.getItem("registeredDevices") || "[]"
+        );
         const newCards = tempHumidityDevices
-          .filter((d) => !parsedCards.find((c) => c.id === d.clientId))
+          .filter((d) => !parsedCards.find((c) => c.id === d._id))
+          .filter((d) => registered.includes(d._id))
           .map((d) => ({
-            id: d.clientId,
-            style: "blue",
+            id: d._id,
             showToggle: true,
             label: `${d.entity} - ${d.category}`,
           }));
@@ -95,8 +133,8 @@ function Home() {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => {
-        console.log("Available Devices:", res.data); // ← 👈 Add this
-        setAvailableDevices(res.data); // ← Don't forget to actually set it
+        console.log("Available Devices:", res.data);
+        setAvailableDevices(res.data);
       })
       .catch((err) => {
         console.error("Failed to fetch available devices", err);
@@ -202,6 +240,14 @@ function Home() {
       localStorage.setItem("deviceStates", JSON.stringify(updated));
       return updated;
     });
+    const registered = JSON.parse(
+      localStorage.getItem("registeredDevices") || "[]"
+    );
+    const updatedRegistered = registered.filter((rid) => rid !== id);
+    localStorage.setItem(
+      "registeredDevices",
+      JSON.stringify(updatedRegistered)
+    );
   };
 
   return (
@@ -213,91 +259,25 @@ function Home() {
         >
           add device
         </button>
+        <button
+          className="add-device-btn"
+          onClick={() => setAutomationModalVisible(true)}
+        >
+          Automation
+        </button>
 
         <div className="card-grid">
           {baseCards.map((card, index) => (
-            <div
-              key={index}
-              className={`card 
-               ${!deviceStates[card.id] ? "inactivee" : ""}
-            ${
-              deviceStates[card.id] &&
-              typeof statusMap[card.id]?.data?.temperature === "number"
-                ? statusMap[card.id].data.temperature > 16
-                  ? "hot"
-                  : "cold"
-                : card.style || ""
-            }`}
-            >
-              <button
-                className="remove-btn"
-                onClick={() => removeCard(card.id)}
-                title="Remove card"
-              >
-                Delete
-              </button>
-              {typeof statusMap[card.id]?.data?.temperature === "number" &&
-                (!deviceStates[card.id] ||
-                  (deviceStates[card.id] &&
-                    (statusMap[card.id].data.temperature > 16 ||
-                      statusMap[card.id].data.temperature <= 16))) && (
-                  <img
-                    src={Linactive}
-                    alt="Linactive"
-                    className="Linactive-icon"
-                  />
-                )}
-
-              <div className="card-text">{card.label}</div>
-
-              {card.showToggle && (
-                <button
-                  className={`toggle-btn ${
-                    deviceStates[card.id] ? "toggled" : ""
-                  } ${loadingStates[index] ? "loading" : ""}`}
-                  onClick={() => toggleCard(index, card.id)}
-                  disabled={loadingStates[index]}
-                  title={loadingStates[index] ? "Түр хүлээнэ үү..." : ""}
-                >
-                  <div className="thumb">
-                    {loadingStates[index] && <div className="spinner"></div>}
-                  </div>
-                </button>
-              )}
-
-              {card.category === "temperature & humidity sensor" ||
-              card.label
-                .toLowerCase()
-                .includes("temperature & humidity sensor") ? (
-                <div
-                  style={{ marginTop: "8px", fontSize: "14px", color: "#fff" }}
-                >
-                  {deviceStates[card.id] ? (
-                    <>
-                      🌡 Температур:{" "}
-                      {statusMap[card.id]?.data?.temperature ?? "Мэдээлэл алга"}{" "}
-                      °C
-                      <br />
-                      💧 Чийгшил:{" "}
-                      {statusMap[card.id]?.data?.humidity ?? "Мэдээлэл алга"} %
-                    </>
-                  ) : (
-                    <>Унтарсан</>
-                  )}
-                </div>
-              ) : card.id === "VIOT_E99614" ? (
-                <div
-                  style={{ marginTop: "8px", fontSize: "14px", color: "#fff" }}
-                >
-                  🌡 Температур:{" "}
-                  {deviceStates["VIOT_E99614"]
-                    ? statusMap["VIOT_E99614"]?.data?.temperature ??
-                      "Мэдээлэл алга"
-                    : "Унтарсан"}{" "}
-                  °C
-                </div>
-              ) : null}
-            </div>
+            <DeviceCardd
+              key={card.id}
+              card={card}
+              deviceState={deviceStates[card.id]}
+              statusData={statusMap[card.id]?.data}
+              loading={loadingStates[index]}
+              onToggle={toggleCard}
+              onRemove={removeCard}
+              index={index}
+            />
           ))}
         </div>
 
@@ -306,7 +286,6 @@ function Home() {
           open={deviceSelectVisible}
           onCancel={() => setDeviceSelectVisible(false)}
           onOk={() => {
-            console.log("Modal onOk selectedDevice:", selectedDevice);
             if (!selectedDevice) {
               message.warning("pls select device");
               return;
@@ -324,6 +303,17 @@ function Home() {
               )
               .then((res) => {
                 if (!baseCards.find((c) => c.id === selectedDevice._id)) {
+                  const registered = JSON.parse(
+                    localStorage.getItem("registeredDevices") || "[]"
+                  );
+                  if (!registered.includes(selectedDevice._id)) {
+                    registered.push(selectedDevice._id);
+                    localStorage.setItem(
+                      "registeredDevices",
+                      JSON.stringify(registered)
+                    );
+                  }
+
                   const newCard = {
                     id: selectedDevice._id,
                     style: "temp",
@@ -348,14 +338,7 @@ function Home() {
             style={{ width: "100%" }}
             placeholder="choose a dev"
             labelInValue
-            value={
-              selectedDevice
-                ? {
-                    value: selectedDevice.deviceId,
-                    label: `${selectedDevice.deviceId} - ${selectedDevice.entity} / ${selectedDevice.category}`,
-                  }
-                : undefined
-            }
+            value={selectedDevice ? selectedDevice._id : undefined}
             onChange={({ value }) => {
               const device = availableDevices.find((d) => d._id === value);
               console.log("Selected device from dropdown:", device);
@@ -363,105 +346,114 @@ function Home() {
             }}
           >
             {availableDevices.map((device) => (
-              <Select.Option key={device._id} value={device._id}>
+              <Select.Option key={device.clientId} value={device._id}>
                 {device.deviceId} - {device.entity} / {device.category}
               </Select.Option>
             ))}
           </Select>
         </Modal>
+
+        <Modal
+          title="Select device & automation time"
+          open={automationModalVisible}
+          onCancel={() => setAutomationModalVisible(false)}
+          onOk={handleAutomationSave}
+        >
+          <Select
+            style={{ width: "100%", marginBottom: 16 }}
+            placeholder="Choose a device"
+            value={automationDevice?._id}
+            onChange={(value) => {
+              const found = availableDevices.find((d) => d._id === value);
+              setAutomationDevice(found);
+            }}
+          >
+            {availableDevices.map((device) => (
+              <Select.Option key={device._id} value={device._id}>
+                {device.deviceId} - {device.entity}
+              </Select.Option>
+            ))}
+          </Select>
+
+          <DatePicker
+            style={{ width: "100%", marginBottom: 16 }}
+            value={automationDate}
+            onChange={(date) => setAutomationDate(date)}
+            format="YYYY-MM-DD"
+          />
+
+          <TimePicker.RangePicker
+            format="HH:mm"
+            value={automationTime}
+            onChange={(value) => setAutomationTime(value)}
+          />
+          <Radio.Group
+            onChange={(e) => setAutomationAction(e.target.value)}
+            value={automationAction}
+            style={{ marginBottom: 16 }}
+          >
+            <Radio value="on">Асаах</Radio>
+            <Radio value="off">Унтраах</Radio>
+          </Radio.Group>
+        </Modal>
       </div>
       <div className="right-section">
-        <div>
-          <img className="cloud" src={cloudImg} alt="cloud" />
-        </div>
-        <div className="box-container">
-          <div className="box profile-box" onClick={() => navigate("/profile")}>
-            <div className="box-header">
-              <UserOutlined style={{ fontSize: 17 }} />
-              <span>Профайл</span>
-            </div>
-            <div className="box-body">
-              <h3>{userName}</h3>
-              <p>
-                Хувийн хуудас{" "}
-                <img
-                  src="rightArrowSmall.svg"
-                  alt="arrow"
-                  width="6"
-                  height="8"
-                />
-              </p>
-            </div>
-          </div>
+        <div className="status-box">
+          <h3
+            style={{
+              paddingLeft: "20px",
+              borderBottom: "1px solid #ccc",
+              paddingBottom: "8px",
+            }}
+          >
+            {currentDate}
+          </h3>
+          <ul
+            style={{
+              overflowY: "auto",
+              paddingLeft: "20px",
+            }}
+          >
+            {statusLog.length === 0 ? (
+              <li>No status changes yet</li>
+            ) : (
+              statusLog.map((entry, i) => (
+                <li
+                  key={i}
+                  style={{
+                    position: "relative",
+                    padding: "8px 40px 20px 10px",
+                  }}
+                >
+                  <div style={{ fontWeight: "bold" }}>{entry.message}</div>
 
-          <div className="box payment-box">
-            <div className="box-header">
-              <WalletOutlined style={{ fontSize: 16 }} />
-              <span>Төлбөрийн багц</span>
-            </div>
-            <div className="box-body">
-              <h3 style={{ color: "#39b54a" }}>Premium</h3>
-              <p>2030он хүртэл</p>
-            </div>
-          </div>
-          <div className="status-box">
-            <h3
-              style={{
-                paddingLeft: "20px",
-                borderBottom: "1px solid #ccc",
-                paddingBottom: "8px",
-              }}
-            >
-              {currentDate}
-            </h3>
-            <ul
-              style={{
-                maxHeight: "180px",
-                overflowY: "auto",
-                paddingLeft: "20px",
-              }}
-            >
-              {statusLog.length === 0 ? (
-                <li>No status changes yet</li>
-              ) : (
-                statusLog.map((entry, i) => (
-                  <li
-                    key={i}
+                  <span
                     style={{
-                      position: "relative",
-                      padding: "8px 40px 20px 10px",
+                      position: "absolute",
+                      top: "8px",
+                      right: "10px",
+                      fontSize: "12px",
+                      color: "#999",
                     }}
                   >
-                    <div style={{ fontWeight: "bold" }}>{entry.message}</div>
+                    {dayjs(entry.timestamp).format("HH:mm")}
+                  </span>
 
-                    <span
-                      style={{
-                        position: "absolute",
-                        top: "8px",
-                        right: "10px",
-                        fontSize: "12px",
-                        color: "#999",
-                      }}
-                    >
-                      {dayjs(entry.timestamp).format("HH:mm")}
-                    </span>
-
-                    <span
-                      style={{
-                        position: "absolute",
-                        bottom: "4px",
-                        left: "10px",
-                        fontSize: "12px",
-                        color: "#999",
-                      }}
-                    >
-                      {dayjs(entry.timestamp).format("YYYY-MM-DD")}
-                    </span>
-                  </li>
-                ))
-              )}
-            </ul>
-          </div>
+                  <span
+                    style={{
+                      position: "absolute",
+                      bottom: "4px",
+                      left: "10px",
+                      fontSize: "12px",
+                      color: "#999",
+                    }}
+                  >
+                    {dayjs(entry.timestamp).format("YYYY-MM-DD")}
+                  </span>
+                </li>
+              ))
+            )}
+          </ul>
         </div>
       </div>
     </div>
