@@ -79,15 +79,10 @@ const Layout = () => {
           alignItems: "center",
         }}
       >
-        <img
-          src="/images/llog.png"
-          alt="loginhead"
-          className="layout-img"
-        />
+        <img src="/images/llog.png" alt="loginhead" className="layout-img" />
 
-        <h2 style={{ marginRight: "5px" }}>Hi, {userName}</h2>
         <Select
-          defaultValue="menu"
+          value={userName}
           className="logout"
           style={{ width: 140 }}
           onChange={handleSelectChange}
