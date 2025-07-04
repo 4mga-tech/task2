@@ -73,7 +73,7 @@ const Layout = () => {
           position: "sticky",
           top: 0,
           zIndex: 1000,
-          backgroundColor: "#b2eaff",
+          backgroundColor: "#EFEFEF",
           padding: "16px",
           display: "flex",
           alignItems: "center",
@@ -103,7 +103,7 @@ const Layout = () => {
         style={{
           height: "calc(100vh - 80px)",
           overflowY: "auto",
-          backgroundColor: "#b2eaff",
+          backgroundColor: "#EFEFEF",
           padding: "16px",
         }}
       >

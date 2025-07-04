@@ -72,11 +72,41 @@ function Home() {
     stored.push(automation);
     localStorage.setItem("automatedDevices", JSON.stringify(stored));
 
+    handleAutomationSubmit(automation);
+
     message.success("Automation saved!");
     setAutomationModalVisible(false);
     setAutomationDevice(null);
     setAutomationTime([]);
   };
+
+  const handleAutomationSubmit = async (automation) => {
+    try {
+      const token = Cookies.get("accessToken");
+      const scheduledTime = `${automation.date}T${automation.from}`;
+
+      const response = await axios.post(
+        "http://localhost:3000/api/schedule/",
+        {
+          deviceId: automation.deviceId,
+          action: automation.action,
+          scheduledTime,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      message.success("Автоматжуулалт серверт илгээгдлээ!");
+      console.log("✅ Scheduled on backend:", response.data);
+    } catch (err) {
+      console.error("❌ Failed to schedule on backend:", err);
+      message.error("Сервертэй холбогдох үед алдаа гарлаа");
+    }
+  };
+
   useEffect(() => {
     const name = Cookies.get("userName");
     if (name) {
@@ -119,7 +149,7 @@ function Home() {
 
         const mergedCards = [...parsedCards, ...newCards];
         setBaseCards(mergedCards);
-        localStorage.setItem("baseCards", JSON.stringify(mergedCards)); // Sync storage
+        localStorage.setItem("baseCards", JSON.stringify(mergedCards));
       })
       .catch((err) => {
         console.error("Error fetching devices", err);
@@ -130,7 +160,7 @@ function Home() {
 
     axios
       .get("http://localhost:3000/api/devices", {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${token} ` },
       })
       .then((res) => {
         console.log("Available Devices:", res.data);
@@ -152,7 +182,7 @@ function Home() {
         })
         .then((res) => {
           console.log(`Telemetry for ${card.id}:`, res.data);
-          if (res.data && res.data.data) {
+          if (res.data) {
             setStatusMap((prev) => ({
               ...prev,
               [card.id]: res.data,
@@ -183,29 +213,33 @@ function Home() {
     }
   }, []);
 
-  const toggleCard = (index, clientId) => {
+  const toggleCard = (index, id) => {
     const newLoadingStates = [...loadingStates];
     newLoadingStates[index] = true;
     setLoadingStates(newLoadingStates);
 
     axios
-      .post(`http://localhost:3000/api/status/toggle/${clientId}`, null, {
+      .post(`http://localhost:3000/api/status/toggle/${id}`, null, {
         headers: { Authorization: `Bearer ${Cookies.get("accessToken")}` },
       })
-      .then(() => {
-        setTimeout(() => {
+      .then((response) => {
+        const newStatus = response?.data?.status?.status;
+
+        if (newStatus !== undefined) {
           setDeviceStates((prev) => {
-            const newState = !prev[clientId];
-            addStatusLogEntry(clientId, newState);
+            const newState = newStatus === "on";
+            addStatusLogEntry(id, newState);
             return {
               ...prev,
-              [clientId]: newState,
+              [id]: newState,
             };
           });
+        } else {
+          message.error("Failed to retrieve the new status.");
+        }
 
-          newLoadingStates[index] = false;
-          setLoadingStates([...newLoadingStates]);
-        }, 1500);
+        newLoadingStates[index] = false;
+        setLoadingStates([...newLoadingStates]);
       })
       .catch((err) => {
         console.error("Toggle error:", err);
@@ -253,18 +287,36 @@ function Home() {
   return (
     <div className="main-content">
       <div className="left-section">
-        <button
-          className="add-device-btn"
-          onClick={() => setDeviceSelectVisible(true)}
-        >
-          add device
-        </button>
-        <button
-          className="add-device-btn"
-          onClick={() => setAutomationModalVisible(true)}
-        >
-          Automation
-        </button>
+        <div className="choose">
+          <div>
+            <button>Бүгд</button>
+          </div>
+          <div>
+            <button>Гал тогоо</button>
+          </div>
+          <div>
+            <button>Жижиг Өрөө</button>
+          </div>
+          <div>
+            {" "}
+            <button>PpM</button>
+          </div>
+        </div>
+
+        <div>
+          <button
+            className="add-device-btn"
+            onClick={() => setDeviceSelectVisible(true)}
+          >
+            add device
+          </button>
+          <button
+            className="add-device-btn"
+            onClick={() => setAutomationModalVisible(true)}
+          >
+            Automation
+          </button>
+        </div>
 
         <div className="card-grid">
           {baseCards.map((card, index) => (
@@ -272,7 +324,7 @@ function Home() {
               key={card.id}
               card={card}
               deviceState={deviceStates[card.id]}
-              statusData={statusMap[card.id]?.data}
+              statusData={statusMap[card.id]}
               loading={loadingStates[index]}
               onToggle={toggleCard}
               onRemove={removeCard}

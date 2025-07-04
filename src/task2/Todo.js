@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useRef,useState, useEffect } from "react";
 import axiosInstance from "./axiosInstance";
 import { Button, Modal, ConfigProvider } from "antd";
 import { createStyles, useTheme } from "antd-style";
 import "./Todo.css";
-
 const useStyle = createStyles(({ token }) => ({
   "my-modal-body": {
     background: token.blue1,
@@ -26,7 +25,7 @@ const useStyle = createStyles(({ token }) => ({
 function Todo() {
   const [tasks, setTasks] = useState(() => {
     const saved = localStorage.getItem("tasks");
-    if(saved) return JSON.parse(saved);
+    if (saved) return JSON.parse(saved);
     return [];
   });
   const [input, setInput] = useState("");
@@ -64,22 +63,22 @@ function Todo() {
       boxShadow: "0 0 30px #999",
     },
   };
-
+  const fetchedRef = useRef(false);
   useEffect(() => {
-    if(tasks.length === 0){
-    axiosInstance
-      .get("/todos?_limit=9", {
-        baseURL: "https://jsonplaceholder.typicode.com",
-      })
-      .then((response) => {
-        const todos = response.data.map((todo) => todo.title);
-        setTasks(todos);
-        localStorage.setItem("tasks", JSON.stringify(todos));
-      })
-      .catch((error) => {
-        console.error("Error fetching todos:", error);
-      });
-  }}, []);
+    if (!fetchedRef.current && tasks.length === 0) {
+      fetchedRef.current = true;
+      axiosInstance
+        .get("/todos?_limit=9", {
+          baseURL: "https://jsonplaceholder.typicode.com",
+        })
+        .then((response) => {
+          const todos = response.data.map((todo) => todo.title);
+          setTasks(todos);
+          localStorage.setItem("tasks", JSON.stringify(todos));
+        })
+        .catch(console.error);
+    }
+  }, [tasks.length]);
   useEffect(() => {
     localStorage.setItem("tasks", JSON.stringify(tasks));
   }, [tasks]);

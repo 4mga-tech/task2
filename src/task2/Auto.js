@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { Modal, Button } from "antd";
+import { Modal, Button, message } from "antd";
+import axios from "axios";
 import Cookies from "js-cookie";
-import "../task2/Home.css";
 import dayjs from "dayjs";
+import "../task2/Home.css";
 
 function Auto() {
   const [, setUserName] = useState("");
@@ -10,16 +11,14 @@ function Auto() {
     const saved = localStorage.getItem("statusLog");
     return saved ? JSON.parse(saved) : [];
   });
+
   const currentDate = dayjs().format("YYYY-MM-DD");
 
   const [automated, setAutomated] = useState([]);
   const [detailModalVisible, setDetailModalVisible] = useState(false);
   const [selectedAutomation, setSelectedAutomation] = useState(null);
-  const deleteAutomation = (id) => {
-    const updated = automated.filter((d) => d.deviceId !== id);
-    setAutomated(updated);
-    localStorage.setItem("automatedDevices", JSON.stringify(updated));
-  };
+
+  const [, setAvailableDevices] = useState([]);
 
   useEffect(() => {
     const name = Cookies.get("userName");
@@ -35,6 +34,18 @@ function Auto() {
     }
   }, []);
 
+  useEffect(() => {
+    const token = Cookies.get("accessToken");
+    if (!token) return;
+
+    axios
+      .get("http://localhost:3000/api/devices", {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .then((res) => setAvailableDevices(res.data))
+      .catch((err) => console.error("Failed to fetch devices", err));
+  }, []);
+
   const showDetailModal = (automation) => {
     setSelectedAutomation(automation);
     setDetailModalVisible(true);
@@ -45,28 +56,47 @@ function Auto() {
     setSelectedAutomation(null);
   };
 
+  const deleteAutomation = (id) => {
+    Modal.confirm({
+      title: "Та энэ автоматжуулалтыг устгахдаа итгэлтэй байна уу?",
+      okText: "Тийм",
+      cancelText: "Үгүй",
+      onOk() {
+        const updated = automated.filter((d) => d.deviceId !== id);
+        setAutomated(updated);
+        localStorage.setItem("automatedDevices", JSON.stringify(updated));
+        message.success("Автоматжуулалт амжилттай устлаа");
+      },
+    });
+  };
+
   return (
     <div className="main-content">
       <div className="Aleft-section">
         <h2>Automation Schedule</h2>
         {automated.length === 0 ? (
-          <p>No automated devices yet.</p>
+          <p>Автоматжуулалт алга байна.</p>
         ) : (
           <ul>
             {automated.map((d, i) => (
               <li
-                key={i}
+                key={d.deviceId || i}
                 style={{
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center",
+                  padding: "6px 0",
                 }}
               >
                 <span>🛠 {d.label}</span>
                 <span>
                   📅 {d.date} ⏰ {d.from} to {d.to} →
                   {d.action === "on" ? " Асаах" : " Унтраах"}{" "}
-                  <Button type="link" onClick={() => showDetailModal(d)}>
+                  <Button
+                    type="link"
+                    onClick={() => showDetailModal(d)}
+                    aria-label="Дэлгэрэнгүй үзэх"
+                  >
                     Дэлгэрэнгүй
                   </Button>
                   <Button
@@ -74,6 +104,7 @@ function Auto() {
                     type="link"
                     onClick={() => deleteAutomation(d.deviceId)}
                     style={{ marginLeft: 8 }}
+                    aria-label="Автоматжуулалт устгах"
                   >
                     Устгах
                   </Button>
@@ -88,7 +119,11 @@ function Auto() {
           open={detailModalVisible}
           onCancel={handleModalClose}
           footer={[
-            <Button key="close" onClick={handleModalClose}>
+            <Button
+              key="close"
+              onClick={handleModalClose}
+              aria-label="Дэлгэрэнгүй хаах"
+            >
               Хаах
             </Button>,
           ]}
@@ -113,6 +148,7 @@ function Auto() {
           )}
         </Modal>
       </div>
+
       <div className="right-section">
         <div className="box-container">
           <div className="status-box">
@@ -132,7 +168,7 @@ function Auto() {
               }}
             >
               {statusLog.length === 0 ? (
-                <li>No status changes yet</li>
+                <li>Статусын өөрчлөлт алга байна</li>
               ) : (
                 statusLog.map((entry, i) => (
                   <li

@@ -25,9 +25,14 @@
   gap: 26px;
 }
 .card.default {
-  background-color: #b2eaff;
+  background-color: #f5f3f3;
   color: rgb(0, 0, 0);
   border: 1px solid #bdbdbd;
+}
+.card.toggled {
+  background-color: rgba(213, 76, 218, 0.8);
+  color: black;
+  border: 1px solid #ccc;
 }
 .toggle-btn.loading {
   cursor: not-allowed;
@@ -91,5 +96,4 @@
   z-index: 3;
   opacity: 1;
   pointer-events: none;
-
 }
