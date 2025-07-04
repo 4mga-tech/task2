@@ -4,10 +4,16 @@ import axios from "axios";
 import DeviceCardd from "./DeviceCardd";
 import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
-import { Modal, Select, message } from "antd";
 import dayjs from "dayjs";
-import { TimePicker, DatePicker } from "antd";
-import { Radio } from "antd";
+import {
+  TimePicker,
+  Checkbox,
+  DatePicker,
+  Radio,
+  Modal,
+  Select,
+  message,
+} from "antd";
 function Home() {
   const [, setUserName] = useState("");
   const [automationDate, setAutomationDate] = useState(null);
@@ -18,8 +24,17 @@ function Home() {
   const [automationModalVisible, setAutomationModalVisible] = useState(false);
   const [automationDevice, setAutomationDevice] = useState(null);
   const [automationTime, setAutomationTime] = useState([]);
-  useState(null);
-
+  const daysOptions = [
+    { label: "Sunday", value: 0 },
+    { label: "Monday", value: 1 },
+    { label: "Tuesday", value: 2 },
+    { label: "Wednesday", value: 3 },
+    { label: "Thursday", value: 4 },
+    { label: "Friday", value: 5 },
+    { label: "Saturday", value: 6 },
+  ];
+  const [selectedDays, setSelectedDays] = useState([]);
+  const [isDaily, setIsDaily] = useState(false);
   const [statusLog, setStatusLog] = useState(() => {
     const saved = localStorage.getItem("statusLog");
     return saved ? JSON.parse(saved) : [];
@@ -45,27 +60,66 @@ function Home() {
   const [baseCards, setBaseCards] = useState([]);
   const [, setCurrentTime] = useState(dayjs().format("HH:mm:ss"));
   const handleAutomationSave = () => {
-    if (!automationDevice || automationTime.length !== 2 || !automationDate) {
-      message.warning("Device, date, and time range are required");
+    if (
+      !automationDevice ||
+      automationTime.length !== 2 ||
+      (!automationDate && !isDaily)
+    ) {
+      message.warning(
+        "Please select device, time range and date or days of week"
+      );
+      return;
+    }
+
+    if (isDaily && selectedDays.length === 0) {
+      message.warning("Please select at least one day of the week");
       return;
     }
 
     const automation = {
       deviceId: automationDevice._id,
-      date: automationDate.format("YYYY-MM-DD"),
       from: automationTime[0].format("HH:mm"),
       to: automationTime[1].format("HH:mm"),
       label: automationDevice.entity,
       action: automationAction,
+      daily: isDaily,
+      date: automationDate ? automationDate.format("YYYY-MM-DD") : null, // renamed here
+      daysOfWeek: isDaily ? selectedDays : undefined,
     };
+
+    if (isDaily) {
+      automation.daysOfWeek = selectedDays;
+    } else {
+      automation.date = automationDate.format("YYYY-MM-DD");
+    }
 
     const stored = JSON.parse(localStorage.getItem("automatedDevices") || "[]");
 
-    const alreadyExists = stored.some(
-      (item) => item.deviceId === automation.deviceId
-    );
+    // You might want to adjust this uniqueness check for daily automations
+    const alreadyExists = stored.some((item) => {
+      if (item.deviceId !== automation.deviceId) return false;
+      if (item.daily && automation.daily) {
+        // Check overlap in days and time
+        const overlapDays = item.daysOfWeek.some((day) =>
+          automation.daysOfWeek.includes(day)
+        );
+        const overlapTime = !(
+          automation.to <= item.from || automation.from >= item.to
+        );
+        return overlapDays && overlapTime;
+      }
+      if (!item.daily && !automation.daily) {
+        // Same date and overlapping time?
+        return (
+          item.date === automation.date &&
+          !(automation.to <= item.from || automation.from >= item.to)
+        );
+      }
+      return false;
+    });
+
     if (alreadyExists) {
-      message.warning("This device already has an automation.");
+      message.warning("This device already has an overlapping automation.");
       return;
     }
 
@@ -78,7 +132,38 @@ function Home() {
     setAutomationModalVisible(false);
     setAutomationDevice(null);
     setAutomationTime([]);
+    setAutomationDate(null);
+    setIsDaily(false);
+    setSelectedDays([]);
   };
+
+  useEffect(() => {
+    const stored = JSON.parse(localStorage.getItem("automatedDevices") || "[]");
+
+    stored.forEach((automation) => {
+      const toTime = dayjs(
+        `${automation.date} ${automation.to}`,
+        "YYYY-MM-DD HH:mm"
+      );
+      const now = dayjs();
+
+      const msUntilEnd = toTime.diff(now);
+
+      if (msUntilEnd > 0 && msUntilEnd < 3600000) {
+        // schedule a fetch at the end of automation
+        setTimeout(async () => {
+          const statusOn = await fetchDeviceStatus(automation.deviceId);
+          if (statusOn !== null) {
+            setDeviceStates((prev) => ({
+              ...prev,
+              [automation.deviceId]: statusOn,
+            }));
+            addStatusLogEntry(automation.deviceId, statusOn);
+          }
+        }, msUntilEnd);
+      }
+    });
+  }, []);
 
   const handleAutomationSubmit = async (automation) => {
     try {
@@ -89,9 +174,10 @@ function Home() {
         {
           deviceId: automation.deviceId,
           action: automation.action,
-          date: automation.date,
+          startDate: automation.date,
           fromTime: automation.from,
           toTime: automation.to,
+          daysOfWeek: automation.daysOfWeek ?? [],
         },
         {
           headers: {
@@ -156,7 +242,21 @@ function Home() {
         console.error("Error fetching devices", err);
       });
   }, [navigate]);
-  
+  // useEffect(() => {
+  //   const token = Cookies.get("accessToken");
+
+  //   axios
+  //     .get("http://localhost:3000/api/devices", {
+  //       headers: { Authorization: `Bearer ${token} ` },
+  //     })
+  //     .then((res) => {
+  //       console.log("Available Devices:", res.data);
+  //       setAvailableDevices(res.data);
+  //     })
+  //     .catch((err) => {
+  //       console.error("Failed to fetch available devices", err);
+  //     });
+  // }, []);
 
   useEffect(() => {
     const token = Cookies.get("accessToken");
@@ -199,42 +299,63 @@ function Home() {
       setDeviceStates(JSON.parse(savedStates));
     }
   }, []);
-
-  const toggleCard = (index, id) => {
-    const newLoadingStates = [...loadingStates];
-    newLoadingStates[index] = true;
-    setLoadingStates(newLoadingStates);
-
-    axios
-      .post(`http://localhost:3000/api/status/toggle/${id}`, null, {
-        headers: { Authorization: `Bearer ${Cookies.get("accessToken")}` },
-      })
-      .then((response) => {
-        const newStatus = response?.data?.status?.status;
-
-        if (newStatus !== undefined) {
-          setDeviceStates((prev) => {
-            const newState = newStatus === "on";
-            addStatusLogEntry(id, newState);
-            return {
-              ...prev,
-              [id]: newState,
-            };
-          });
-        } else {
-          message.error("Failed to retrieve the new status.");
-        }
-
-        newLoadingStates[index] = false;
-        setLoadingStates([...newLoadingStates]);
-      })
-      .catch((err) => {
-        console.error("Toggle error:", err);
-        message.error("Toggle failed");
-        newLoadingStates[index] = false;
-        setLoadingStates([...newLoadingStates]);
+  const fetchDeviceStatus = async (id) => {
+    try {
+      const token = Cookies.get("accessToken");
+      const res = await axios.get(`http://localhost:3000/api/status/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
       });
+      return res.data.status === "on"; // return true if 'on', false if 'off'
+    } catch (err) {
+      console.error("Failed to fetch device status", err);
+      return null;
+    }
   };
+
+  const toggleCard = async (index, id) => {
+    setLoadingStates((prev) => {
+      const copy = [...prev];
+      copy[index] = true;
+      return copy;
+    });
+
+    try {
+      const token = Cookies.get("accessToken");
+
+      await axios.post(`http://localhost:3000/api/status/toggle/${id}`, null, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const statusOn = await fetchDeviceStatus(id);
+      if (statusOn !== null) {
+        addStatusLogEntry(id, statusOn);
+        setDeviceStates((prev) => ({ ...prev, [id]: statusOn }));
+      }
+    } catch (err) {
+      console.error("Toggle failed", err);
+      message.error("Toggle failed");
+    } finally {
+      setLoadingStates((prev) => {
+        const copy = [...prev];
+        copy[index] = false;
+        return copy;
+      });
+    }
+  };
+  useEffect(() => {
+    if (baseCards.length === 0) return;
+
+    const interval = setInterval(async () => {
+      for (const card of baseCards) {
+        const statusOn = await fetchDeviceStatus(card.id);
+        if (statusOn !== null) {
+          setDeviceStates((prev) => ({ ...prev, [card.id]: statusOn }));
+        }
+      }
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, [baseCards]);
 
   useEffect(() => {
     console.log("Status Map:", statusMap);
@@ -434,6 +555,22 @@ function Home() {
             <Radio value="on">Асаах</Radio>
             <Radio value="off">Унтраах</Radio>
           </Radio.Group>
+          <Checkbox.Group
+            options={daysOptions}
+            value={selectedDays}
+            onChange={setSelectedDays}
+            disabled={!isDaily}
+          />
+
+          <Checkbox
+            checked={isDaily}
+            onChange={(e) => {
+              setIsDaily(e.target.checked);
+              if (!e.target.checked) setSelectedDays([]);
+            }}
+          >
+            Daily Automation (repeat weekly on selected days)
+          </Checkbox>
         </Modal>
       </div>
       <div className="right-section">

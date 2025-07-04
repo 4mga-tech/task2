@@ -19,6 +19,10 @@ function Auto() {
   const [selectedAutomation, setSelectedAutomation] = useState(null);
 
   const [, setAvailableDevices] = useState([]);
+  const [automationHistory] = useState(() =>
+    JSON.parse(localStorage.getItem("automationHistory") || "[]")
+  );
+  const [historyVisible, setHistoryVisible] = useState(false);
 
   useEffect(() => {
     const name = Cookies.get("userName");
@@ -69,51 +73,92 @@ function Auto() {
       },
     });
   };
+  const handleReAutomation = (automation) => {
+    const activeAutomations = automated.filter(
+      (a) => !dayjs(`${a.date} ${a.to}`).isBefore(dayjs())
+    );
+
+    const isOverlapping = activeAutomations.some(
+      (a) => a.deviceId === automation.deviceId
+    );
+
+    if (isOverlapping) {
+      message.warning(
+        "Энэ төхөөрөмж одоогоор идэвхтэй автоматжуулалттай байна."
+      );
+      return;
+    }
+
+    const newAutomation = {
+      ...automation,
+      date: dayjs().format("YYYY-MM-DD"), // set today
+      // optionally set new time or reuse old time
+    };
+
+    const updated = [...automated, newAutomation];
+    setAutomated(updated);
+    localStorage.setItem("automatedDevices", JSON.stringify(updated));
+    message.success("Автоматжуулалт дахин тохирлоо");
+  };
 
   return (
     <div className="main-content">
       <div className="Aleft-section">
-        <h2>Automation Schedule</h2>
+        <h2>Automation Schedule</h2>{" "}
         {automated.length === 0 ? (
           <p>Автоматжуулалт алга байна.</p>
         ) : (
           <ul>
-            {automated.map((d, i) => (
-              <li
-                key={d.deviceId || i}
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  padding: "6px 0",
-                }}
-              >
-                <span>🛠 {d.label}</span>
-                <span>
-                  📅 {d.date} ⏰ {d.from} to {d.to} →
-                  {d.action === "on" ? " Асаах" : " Унтраах"}{" "}
-                  <Button
-                    type="link"
-                    onClick={() => showDetailModal(d)}
-                    aria-label="Дэлгэрэнгүй үзэх"
-                  >
-                    Дэлгэрэнгүй
-                  </Button>
-                  <Button
-                    danger
-                    type="link"
-                    onClick={() => deleteAutomation(d.deviceId)}
-                    style={{ marginLeft: 8 }}
-                    aria-label="Автоматжуулалт устгах"
-                  >
-                    Устгах
-                  </Button>
-                </span>
-              </li>
-            ))}
+            {automated.map((d, i) => {
+              const isEnded = dayjs(`${d.date} ${d.to}`).isBefore(dayjs());
+              return (
+                <li
+                  key={d.deviceId || i}
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    padding: "6px 0",
+                  }}
+                >
+                  <span>🛠 {d.label}</span>
+                  <span>
+                    📅 {d.date} ⏰ {d.from} to {d.to} →{" "}
+                    {d.action === "on" ? "Асаах" : "Унтраах"} |{" "}
+                    <strong style={{ color: isEnded ? "gray" : "green" }}>
+                      {isEnded ? "Төгссөн" : "Идэвхтэй"}
+                    </strong>
+                    <Button
+                      type="link"
+                      onClick={() => showDetailModal(d)}
+                      aria-label="Дэлгэрэнгүй үзэх"
+                    >
+                      Дэлгэрэнгүй
+                    </Button>
+                    {isEnded && (
+                      <Button
+                        type="link"
+                        style={{ color: "#1890ff" }}
+                        onClick={() => handleReAutomation(d)}
+                      >
+                        Дахин автоматжуулах
+                      </Button>
+                    )}
+                    <Button
+                      danger
+                      type="link"
+                      onClick={() => deleteAutomation(d.deviceId)}
+                      style={{ marginLeft: 8 }}
+                      aria-label="Автоматжуулалт устгах"
+                    >
+                      Устгах
+                    </Button>
+                  </span>
+                </li>
+              );
+            })}
           </ul>
         )}
-
         <Modal
           title="Automation Details"
           open={detailModalVisible}
@@ -145,6 +190,34 @@ function Auto() {
                 {selectedAutomation.action === "on" ? "Асаах" : "Унтраах"}
               </p>
             </div>
+          )}
+        </Modal>
+        <Modal
+          title="Automation History"
+          open={historyVisible}
+          onCancel={() => setHistoryVisible(false)}
+          footer={[
+            <Button key="close" onClick={() => setHistoryVisible(false)}>
+              Хаах
+            </Button>,
+          ]}
+        >
+          {automationHistory.length === 0 ? (
+            <p>Түүх хоосон байна.</p>
+          ) : (
+            <ul style={{ paddingLeft: "0" }}>
+              {automationHistory.map((item, i) => (
+                <li key={i} style={{ marginBottom: "12px" }}>
+                  <strong>🛠 {item.label}</strong>
+                  <br />
+                  {item.date} ⏰ {item.from} - {item.to} →{" "}
+                  {item.action === "on" ? "Асаах" : "Унтраах"}{" "}
+                  {item.daily && "(Өдөр бүр)"}
+                  <br />
+                  🕔 Дууссан: {dayjs(item.endedAt).format("YYYY-MM-DD HH:mm")}
+                </li>
+              ))}
+            </ul>
           )}
         </Modal>
       </div>
