@@ -80,7 +80,7 @@ const Layout = () => {
         }}
       >
         <img
-          src="/images/loginHead1.svg"
+          src="/images/llog.png"
           alt="loginhead"
           className="layout-img"
         />

@@ -275,3 +275,9 @@ h2 {
   color: rgb(3, 212, 3);
   cursor: pointer;
 }
+.layout-img{
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-color: transparent;
+}
