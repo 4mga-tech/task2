@@ -83,14 +83,15 @@ function Home() {
   const handleAutomationSubmit = async (automation) => {
     try {
       const token = Cookies.get("accessToken");
-      const scheduledTime = `${automation.date}T${automation.from}`;
 
       const response = await axios.post(
         "http://localhost:3000/api/schedule/",
         {
           deviceId: automation.deviceId,
           action: automation.action,
-          scheduledTime,
+          date: automation.date,
+          fromTime: automation.from,
+          toTime: automation.to,
         },
         {
           headers: {
@@ -155,21 +156,7 @@ function Home() {
         console.error("Error fetching devices", err);
       });
   }, [navigate]);
-  useEffect(() => {
-    const token = Cookies.get("accessToken");
-
-    axios
-      .get("http://localhost:3000/api/devices", {
-        headers: { Authorization: `Bearer ${token} ` },
-      })
-      .then((res) => {
-        console.log("Available Devices:", res.data);
-        setAvailableDevices(res.data);
-      })
-      .catch((err) => {
-        console.error("Failed to fetch available devices", err);
-      });
-  }, []);
+  
 
   useEffect(() => {
     const token = Cookies.get("accessToken");

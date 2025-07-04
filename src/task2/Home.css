@@ -20,7 +20,6 @@ body {
 
 .header {
   grid-area: header;
-  background-color: #f5f6f7;
   color: black;
   padding: 16px;
   font-size: 1.5rem;
@@ -255,7 +254,7 @@ h2 {
   box-sizing: border-box;
   padding: 10px;
 }
-.choose:after{
+.choose:after {
   content: "";
   position: absolute;
   bottom: 0;
@@ -264,18 +263,18 @@ h2 {
   height: 0.05px;
   background-color: gray;
 }
-.choose button{
+.choose button {
   border: none;
   background-color: transparent;
   height: 20px;
   font-size: 15px;
   color: #dbdbdb;
 }
-.choose button:hover{
+.choose button:hover {
   color: rgb(3, 212, 3);
   cursor: pointer;
 }
-.layout-img{
+.layout-img {
   position: absolute;
   top: 0;
   left: 0;

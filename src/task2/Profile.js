@@ -252,7 +252,7 @@ function Profile() {
 
         <div className="box right-bottom">
           <div>
-            <Button className="share-btn">
+            <Button className="share-btn" onClick={() => openModal("share")}>
               <img
                 src="/images/device.svg"
                 style={{ height: "20px" }}
@@ -285,8 +285,8 @@ function Profile() {
           modalType === "name"
             ? "Нэр засах"
             : modalType === "password"
-            ? "Нууц үг солих"
-            : "Заавар"
+            ? "Нууц үг солих" :modalType === "guide"
+            ? "Заавар" :"share dev"
         }
         open={isModalVisible}
         onOk={modalType === "guide" ? handleCancel : handleOk}
