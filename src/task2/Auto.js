@@ -73,33 +73,33 @@ function Auto() {
       },
     });
   };
-  const handleReAutomation = (automation) => {
-    const activeAutomations = automated.filter(
-      (a) => !dayjs(`${a.date} ${a.to}`).isBefore(dayjs())
-    );
+  // const handleReAutomation = (automation) => {
+  //   const activeAutomations = automated.filter(
+  //     (a) => !dayjs(`${a.date} ${a.to}`).isBefore(dayjs())
+  //   );
 
-    const isOverlapping = activeAutomations.some(
-      (a) => a.deviceId === automation.deviceId
-    );
+  //   const isOverlapping = activeAutomations.some(
+  //     (a) => a.deviceId === automation.deviceId
+  //   );
 
-    if (isOverlapping) {
-      message.warning(
-        "Энэ төхөөрөмж одоогоор идэвхтэй автоматжуулалттай байна."
-      );
-      return;
-    }
+  //   if (isOverlapping) {
+  //     message.warning(
+  //       "Энэ төхөөрөмж одоогоор идэвхтэй автоматжуулалттай байна."
+  //     );
+  //     return;
+  //   }
 
-    const newAutomation = {
-      ...automation,
-      date: dayjs().format("YYYY-MM-DD"), // set today
-      // optionally set new time or reuse old time
-    };
+  //   const newAutomation = {
+  //     ...automation,
+  //     date: dayjs().format("YYYY-MM-DD"), // set today
+  //     // optionally set new time or reuse old time
+  //   };
 
-    const updated = [...automated, newAutomation];
-    setAutomated(updated);
-    localStorage.setItem("automatedDevices", JSON.stringify(updated));
-    message.success("Автоматжуулалт дахин тохирлоо");
-  };
+  //   const updated = [...automated, newAutomation];
+  //   setAutomated(updated);
+  //   localStorage.setItem("automatedDevices", JSON.stringify(updated));
+  //   message.success("Автоматжуулалт дахин тохирлоо");
+  // };
 
   return (
     <div className="main-content">
@@ -110,7 +110,7 @@ function Auto() {
         ) : (
           <ul>
             {automated.map((d, i) => {
-              const isEnded = dayjs(`${d.date} ${d.to}`).isBefore(dayjs());
+              // const isEnded = dayjs(`${d.date} ${d.to}`).isBefore(dayjs());
               return (
                 <li
                   key={d.deviceId || i}
@@ -125,9 +125,7 @@ function Auto() {
                   <span>
                     📅 {d.date} ⏰ {d.from} to {d.to} →{" "}
                     {d.action === "on" ? "Асаах" : "Унтраах"} |{" "}
-                    <strong style={{ color: isEnded ? "gray" : "green" }}>
-                      {isEnded ? "Төгссөн" : "Идэвхтэй"}
-                    </strong>
+                    
                     <Button
                       type="link"
                       onClick={() => showDetailModal(d)}
@@ -135,7 +133,7 @@ function Auto() {
                     >
                       Дэлгэрэнгүй
                     </Button>
-                    {isEnded && (
+                    {/* {isEnded && (
                       <Button
                         type="link"
                         style={{ color: "#1890ff" }}
@@ -143,7 +141,7 @@ function Auto() {
                       >
                         Дахин автоматжуулах
                       </Button>
-                    )}
+                    )} */}
                     <Button
                       danger
                       type="link"
